@@ -12,6 +12,14 @@ handlers:
 
 - url: /images
   static_dir: images
+  
+- url: /
+  static_files: index.html
+  upload: index.html
+  
+- url: /([^/]*)
+  static_files: \1.html
+  upload: (.*).html
 
 - url: .*
   script: main.app
