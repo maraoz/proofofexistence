@@ -12,6 +12,8 @@
 <script type="text/javascript"
 	src="https://blockchain.info//Resources/wallet/pay-now-button.js"></script>
 
+<script type="text/javascript" src="js/jquery.form.js"></script>
+<script type="text/javascript" src="js/sprintf.js"></script>
 <script type="text/javascript" src="js/index.js"></script>
 
 <title>Proof Of Existence</title>
@@ -46,44 +48,57 @@
 		<div class="span12">.</div>
 
 		<div class="hero-unit">
-			<form id="upload_form" method="POST" enctype="multipart/form-data">
+			<form id="upload_form" method="POST" enctype="multipart/form-data"
+				action="api/register">
 				<fieldset>
 					<legend>Upload new document</legend>
-					<label>Document file</label> <input id='file' type="file" name="d" />
-					<button id="upload_submit" type="submit" class="btn">
+					<input class="" id='file' type="file" name="d" />
+					<button id="upload_submit" type="submit" class="btn btn-success">
 						<i class="icon-file"></i> Submit
 					</button>
+					<br/ > <br/ >
+					<div class="progress progress-striped active">
+						<div class="bar"></div>
+					</div>
+
+					<div style="display: none;" class="slidingDiv alert">TEST</div>
 				</fieldset>
 			</form>
 		</div>
 
-		<div class="span12">
-			Last documents uploaded:
-			<div id="latest"></div>
+		<div class="row">
+			<div class="span9">
+				<h3>Last documents uploaded:</h3>
+				<table class="table" id="latest"></table>
+			</div>
+			<div class="span3">ASLDAKLSDKALS KAS DASDLA DKALK DALSDKALKDLA
+				KDLAK LAKSDK</div>
 		</div>
 
 
-
-		<div style="font-size: 16px; margin: 0 auto; width: 300px"
-			class="blockchain-btn"
-			data-address="17Ab2P14CJ7FMJF6ARVQ7oVrA3iA5RFP6G" data-shared="false">
-			<div class="blockchain stage-begin">
-				<img src="https://blockchain.info//Resources/buttons/donate_64.png" />
-			</div>
-			<div class="blockchain stage-loading" style="text-align: center">
-				<img src="https://blockchain.info//Resources/loading-large.gif" />
-			</div>
-			<div class="blockchain stage-ready">
-				<p align="center">
-					Please Donate To Bitcoin Address: <b>[[address]]</b>
-				</p>
-				<p align="center" class="qr-code"></p>
-			</div>
-			<div class="blockchain stage-paid">
-				Donation of <b>[[value]] BTC</b> Received. Thank You.
-			</div>
-			<div class="blockchain stage-error">
-				<font color="red">[[error]]</font>
+		<div class="row">
+			<div style="font-size: 16px; margin: 0 auto; width: 300px"
+				class="blockchain-btn"
+				data-address="17Ab2P14CJ7FMJF6ARVQ7oVrA3iA5RFP6G"
+				data-shared="false">
+				<div class="blockchain stage-begin">
+					<img src="https://blockchain.info//Resources/buttons/donate_64.png" />
+				</div>
+				<div class="blockchain stage-loading" style="text-align: center">
+					<img src="https://blockchain.info//Resources/loading-large.gif" />
+				</div>
+				<div class="blockchain stage-ready">
+					<p align="center">
+						Please Donate To Bitcoin Address: <b>[[address]]</b>
+					</p>
+					<p align="center" class="qr-code"></p>
+				</div>
+				<div class="blockchain stage-paid">
+					Donation of <b>[[value]] BTC</b> Received. Thank You.
+				</div>
+				<div class="blockchain stage-error">
+					<font color="red">[[error]]</font>
+				</div>
 			</div>
 		</div>
 		<hr>
@@ -94,20 +109,16 @@
 	<!-- /container -->
 
 
-	<script type="text/javascript">
+	<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-        var _gaq = _gaq || [];
-        _gaq.push(['_setAccount', 'UA-36780125-2']);
-        _gaq.push(['_setDomainName', 'combocombat.com']);
-        _gaq.push(['_trackPageview']);
+  ga('create', 'UA-40823064-1', 'proofofexistence.com');
+  ga('send', 'pageview');
 
-        (function () {
-            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-        })();
-
-    </script>
+</script>
 
 </body>
 </html>

@@ -18,6 +18,9 @@ def hash_digest(x):
     hasher.update(x)
     return hasher.hexdigest()
 
+def export_timestamp(doc):
+    return doc.timestamp.strftime("%Y-%m-%d %H:%M:%S")
+
 class JsonAPIHandler(webapp2.RequestHandler):
     def post(self):
         self.get()
@@ -36,7 +39,7 @@ class RegisterHandler(JsonAPIHandler):
         
         docproof = DocumentProof.all().filter("digest = ", digest).get()
         if docproof:
-            return {"success" : False, "reason": "existing"}
+            return {"success" : False, "reason": "existing", "args": [export_timestamp(docproof)]}
         
         docproof = DocumentProof(digest=digest)
         docproof.put()
@@ -45,8 +48,8 @@ class RegisterHandler(JsonAPIHandler):
     
 class LatestHandler(JsonAPIHandler):
     def handle(self):
-        latest = DocumentProof.all().order("-timestamp").run(limit=10)
-        return [{"digest":doc.digest, "timestamp":doc.timestamp.strftime("%Y-%m-%d %H:%M:%S")} for doc in latest]
+        latest = DocumentProof.all().order("-timestamp").run(limit=5)
+        return [{"digest":doc.digest, "timestamp":export_timestamp(doc)} for doc in latest]
 
 app = webapp2.WSGIApplication([
     ('/api/register', RegisterHandler),
