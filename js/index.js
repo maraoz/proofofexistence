@@ -2,7 +2,8 @@ $(document).ready(function() {
 
 	var message = {
 		"format" : "Must select a file to upload",
-		"existing" : "File already exists in the system since %s"
+		"existing" : "File already exists in the system since %s",
+		"added" : "File successfully added to system."
 	}
 
 	var refreshLatest = function() {
@@ -44,12 +45,13 @@ $(document).ready(function() {
 				bar.width(percentVal)
 			},
 			success : function(json) {
+				e = error.clone();
 				if (json.success) {
 					bar.removeClass('bar-info');
 					bar.addClass('bar-success');
+					e.text(message["added"]);
 				} else {
 					bar.removeClass('bar-info');
-					e = error.clone();
 					if (json.args) {
 						bar.addClass('bar-warning');
 						e.text(vsprintf(message[json.reason], json.args));
@@ -57,10 +59,10 @@ $(document).ready(function() {
 						bar.addClass('bar-danger');
 						e.text(message[json.reason]);
 					}
-					error.after(e);
-					e.slideToggle().delay(10000).slideToggle();
 					
 				}
+				error.after(e);
+				e.slideToggle().delay(10000).slideToggle();
 			}
 		});
 

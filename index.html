@@ -51,7 +51,7 @@
 			<form id="upload_form" method="POST" enctype="multipart/form-data"
 				action="api/register">
 				<fieldset>
-					<legend>Upload new document</legend>
+					<legend>Upload a document</legend>
 					<input class="" id='file' type="file" name="d" />
 					<button id="upload_submit" type="submit" class="btn btn-success">
 						<i class="icon-file"></i> Submit
@@ -71,36 +71,37 @@
 				<h3>Last documents uploaded:</h3>
 				<table class="table" id="latest"></table>
 			</div>
-			<div class="span3">ASLDAKLSDKALS KAS DASDLA DKALK DALSDKALKDLA
-				KDLAK LAKSDK</div>
-		</div>
+			<div class="span3" style="margin-top:100px;">
+				<div style="font-size: 16px; margin: 0 auto; width: 300px"
+					class="blockchain-btn"
+					data-address="17Ab2P14CJ7FMJF6ARVQ7oVrA3iA5RFP6G"
+					data-shared="false">
+					<div class="blockchain stage-begin">
+						<img
+							src="https://blockchain.info//Resources/buttons/donate_64.png" />
+					</div>
+					<div class="blockchain stage-loading" style="text-align: center">
+						<img src="https://blockchain.info//Resources/loading-large.gif" />
+					</div>
+					<div class="blockchain stage-ready">
+						<p align="center">
+							Please Donate To Bitcoin Address: <b>[[address]]</b>
+						</p>
+						<p align="center" class="qr-code"></p>
+					</div>
+					<div class="blockchain stage-paid">
+						Donation of <b>[[value]] BTC</b> Received. Thank You.
+					</div>
+					<div class="blockchain stage-error">
+						<font color="red">[[error]]</font>
+					</div>
+				</div>
 
-
-		<div class="row">
-			<div style="font-size: 16px; margin: 0 auto; width: 300px"
-				class="blockchain-btn"
-				data-address="17Ab2P14CJ7FMJF6ARVQ7oVrA3iA5RFP6G"
-				data-shared="false">
-				<div class="blockchain stage-begin">
-					<img src="https://blockchain.info//Resources/buttons/donate_64.png" />
-				</div>
-				<div class="blockchain stage-loading" style="text-align: center">
-					<img src="https://blockchain.info//Resources/loading-large.gif" />
-				</div>
-				<div class="blockchain stage-ready">
-					<p align="center">
-						Please Donate To Bitcoin Address: <b>[[address]]</b>
-					</p>
-					<p align="center" class="qr-code"></p>
-				</div>
-				<div class="blockchain stage-paid">
-					Donation of <b>[[value]] BTC</b> Received. Thank You.
-				</div>
-				<div class="blockchain stage-error">
-					<font color="red">[[error]]</font>
-				</div>
 			</div>
 		</div>
+
+
+		<div class="row"></div>
 		<hr>
 		<footer>
 			<p>&copy; Proof of existence 2012-2013</p>
