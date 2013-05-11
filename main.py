@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
 
-import webapp2, json, jinja2, os, hashlib
+import webapp2, jinja2, os, hashlib
+import json as json
+import datetime
 
 from google.appengine.ext import db
 
@@ -12,7 +14,7 @@ jinja_environment = jinja2.Environment(
 
 
 def hash_digest(x):
-    hasher = hashlib.new('SHA512')
+    hasher = hashlib.new('SHA256')
     hasher.update(x)
     return hasher.hexdigest()
 
@@ -21,30 +23,34 @@ class JsonAPIHandler(webapp2.RequestHandler):
         self.get()
     def get(self):
         resp = self.handle()
-        self.response.write(json.dumps(resp))
+        dthandler = lambda obj: obj.isoformat() if isinstance(obj, datetime.datetime) else None
+        self.response.write(json.dumps(resp, default=dthandler))
 
 
 class RegisterHandler(JsonAPIHandler):
     def handle(self):
         document = self.request.get("d")
-        dig = hash_digest(document)
-        return {"dig": dig}
-"""        
-        if not username or not password:
-            return {"success": False , "error": "format"}
+        if not document:
+            return {"success" : False, "reason" : "format"}
+        digest = hash_digest(document)
         
-        same_name = Player.all().filter('username =', username)
-        if same_name.get():
-            return {"success": False , "error": "username"}
+        docproof = DocumentProof.all().filter("digest = ", digest).get()
+        if docproof:
+            return {"success" : False, "reason": "existing"}
         
+        docproof = DocumentProof(digest=digest)
+        docproof.put()
         
-        player = Player(username=username, password=hash_digest(password), searching = False, match_server = None)
-        player.put()
-        return {"success": True}
-"""
+        return {"success": True, "digest": digest}
+    
+class LatestHandler(JsonAPIHandler):
+    def handle(self):
+        latest = DocumentProof.all().order("-timestamp").run(limit=10)
+        return [{"digest":doc.digest, "timestamp":doc.timestamp.strftime("%Y-%m-%d %H:%M:%S")} for doc in latest]
 
 app = webapp2.WSGIApplication([
     ('/api/register', RegisterHandler),
+    ('/api/latest', LatestHandler)
     
 ], debug=False)
 

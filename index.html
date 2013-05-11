@@ -12,6 +12,7 @@
 <script type="text/javascript"
 	src="https://blockchain.info//Resources/wallet/pay-now-button.js"></script>
 
+<script type="text/javascript" src="js/index.js"></script>
 
 <title>Proof Of Existence</title>
 </head>
@@ -44,12 +45,24 @@
 		<div class="span12">.</div>
 		<div class="span12">.</div>
 
-		<div class="span12">
-			<form action="api/register" method="POST"
-				enctype="multipart/form-data">
-				<input type="file" name="d" /> <input type="submit" />
+		<div class="hero-unit">
+			<form id="upload_form" method="POST" enctype="multipart/form-data">
+				<fieldset>
+					<legend>Upload new document</legend>
+					<label>Document file</label> <input id='file' type="file" name="d" />
+					<button id="upload_submit" type="submit" class="btn">
+						<i class="icon-file"></i> Submit
+					</button>
+				</fieldset>
 			</form>
 		</div>
+
+		<div class="span12">
+			Last documents uploaded:
+			<div id="latest"></div>
+		</div>
+
+
 
 		<div style="font-size: 16px; margin: 0 auto; width: 300px"
 			class="blockchain-btn"
