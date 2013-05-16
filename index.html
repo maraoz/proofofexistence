@@ -61,7 +61,7 @@
 						<div class="bar"></div>
 					</div>
 
-					<div style="display: none;" class="slidingDiv alert">TEST</div>
+					<div style="display: none;" class="slidingDiv alert">message</div>
 				</fieldset>
 			</form>
 		</div>
@@ -71,31 +71,17 @@
 				<h3>Last documents uploaded:</h3>
 				<table class="table" id="latest"></table>
 			</div>
-			<div class="span3" style="margin-top:100px;">
-				<div style="font-size: 16px; margin: 0 auto; width: 300px"
-					class="blockchain-btn"
-					data-address="17Ab2P14CJ7FMJF6ARVQ7oVrA3iA5RFP6G"
-					data-shared="false">
-					<div class="blockchain stage-begin">
-						<img
-							src="https://blockchain.info//Resources/buttons/donate_64.png" />
-					</div>
-					<div class="blockchain stage-loading" style="text-align: center">
-						<img src="https://blockchain.info//Resources/loading-large.gif" />
-					</div>
-					<div class="blockchain stage-ready">
-						<p align="center">
-							Please Donate To Bitcoin Address: <b>[[address]]</b>
-						</p>
-						<p align="center" class="qr-code"></p>
-					</div>
-					<div class="blockchain stage-paid">
-						Donation of <b>[[value]] BTC</b> Received. Thank You.
-					</div>
-					<div class="blockchain stage-error">
-						<font color="red">[[error]]</font>
-					</div>
-				</div>
+			<div class="span3" style="margin-top: 100px;">
+				If you find this useful please consider donating: <br /><br />
+
+				<script>
+					var CoinWidget_Config = {
+						address : '17Ab2P14CJ7FMJF6ARVQ7oVrA3iA5RFP6G',
+						counter : 'amount',
+						text_label : 'Donate to this Bitcoin address:'
+					};
+				</script>
+				<script src="http://c.coinwidget.com/widget.js"></script>
 
 			</div>
 		</div>

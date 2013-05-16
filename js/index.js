@@ -21,7 +21,7 @@ $(document).ready(function() {
 				'class' : 'unstyled',
 				html : items.join('<br />')
 			}).appendTo(latest);
-			setTimeout(refreshLatest, 1000);
+			setTimeout(refreshLatest, 2500);
 		});
 	}
 
