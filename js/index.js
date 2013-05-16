@@ -2,8 +2,8 @@ $(document).ready(function() {
 
 	var message = {
 		"format" : "Must select a file to upload",
-		"existing" : "File already exists in the system since %s",
-		"added" : "File successfully added to system."
+		"existing" : "File already exists in the system since %s. Proof code: %s",
+		"added" : "File successfully added to system. Proof code: %s"
 	}
 
 	var refreshLatest = function() {
@@ -49,7 +49,7 @@ $(document).ready(function() {
 				if (json.success) {
 					bar.removeClass('bar-info');
 					bar.addClass('bar-success');
-					e.text(message["added"]);
+					e.text(vsprintf(message["added"], [json.digest]));
 				} else {
 					bar.removeClass('bar-info');
 					if (json.args) {

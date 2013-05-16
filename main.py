@@ -39,7 +39,7 @@ class RegisterHandler(JsonAPIHandler):
         
         docproof = DocumentProof.all().filter("digest = ", digest).get()
         if docproof:
-            return {"success" : False, "reason": "existing", "args": [export_timestamp(docproof)]}
+            return {"success" : False, "reason": "existing", "args": [export_timestamp(docproof), docproof.digest]}
         
         docproof = DocumentProof(digest=digest)
         docproof.put()
