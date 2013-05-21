@@ -13,7 +13,7 @@ $(document).ready(function() {
 
 			items.push('<thead><tr><th>Document Digest</th><th>Timestamp</th></tr></thead>');
 			$.each(data, function(index, obj) {
-				items.push('<tr><td>' + obj.digest + '</td><td> ' + obj.timestamp + '</td></tr>');
+				items.push('<tr><td><a href="/detail/' + obj.digest+'">'+obj.digest + '</a></td><td> ' + obj.timestamp + '</td></tr>');
 			});
 
 			latest.empty();
@@ -21,7 +21,6 @@ $(document).ready(function() {
 				'class' : 'unstyled',
 				html : items.join('<br />')
 			}).appendTo(latest);
-			setTimeout(refreshLatest, 2500);
 		});
 	}
 
@@ -63,6 +62,11 @@ $(document).ready(function() {
 				}
 				error.after(e);
 				e.slideToggle().delay(10000).slideToggle();
+				if (json.digest) {
+					window.setTimeout(function() {
+						window.location.replace("/detail/"+json.digest);
+					}, 5000);
+				}
 			}
 		});
 

@@ -24,6 +24,10 @@ handlers:
   static_files: \1.html
   upload: (.*).html
 
+- url: /detail/([^/]*)
+  static_files: detail.html
+  upload: detail.html
+
 - url: .*
   script: main.app
 
