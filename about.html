@@ -24,7 +24,7 @@
 				<a class="brand" href="/">Proof of Existence</a>
 				<div class="nav-collapse collapse">
 					<ul class="nav">
-						<li><a href="/">Home</a></li>
+						<li><a href="/">Upload</a></li>
 						<li class="active"><a href="about">About</a></li>
 						<li><a href="contact">Contact</a></li>
 					</ul>
@@ -42,12 +42,18 @@
 		<h1 style="padding-top: 100px;">What is proof of existence?</h1>
 
 		<p>
-			Use our free service to anonymously and securely store an online
-			proof of existence for any document. <strong>Your documents
-				are NOT stored online</strong>, so you don't have to worry about your data
-			leaking. All we store is a cryptographic digest of the file,
-			associated to the time in which you upload the document. In this way,
-			you can later certify that said data existed at that time.
+			Use our service to anonymously and securely store an online
+			distributed proof of existence for any document. <strong>Your
+				documents are NOT stored in our database or in the Bitcoin
+				blockchain</strong>, so you don't have to worry about your data being
+			accessed by others. All we store is a <a
+				href="https://en.wikipedia.org/wiki/Cryptographic_hash_function">cryptographic
+				digest</a> of the file, associated to the time in which you uploaded the
+			document. In this way, you can later certify that said data existed
+			at that time. This is the first service allowing you to publicly
+			prove that you have certain information without revealing the data
+			or yourself, with an decentralized certification based on the
+			<a href="http://bitcoin.org/">Bitcoin network</a>.
 		</p>
 
 		<h3 style="padding-top: 40px;">Common uses</h3>
@@ -60,6 +66,16 @@
 				patents, etc.
 			</div>
 			<div class="span4">
+				<i class="icon-time"></i><strong> Document timestamping.</strong> <br />
+				You can prove certain data exists at a certain moment of time. As we
+				use the <a href="https://blockchain.info/">Bitcoin blockchain</a> to
+				store the document proof, you can certify the existance of your
+				document without the need of a central certifying authority. Use the
+				computing power of the whole Bitcoin network to certify your data,
+				for a small fee (required to push transactions into the Bitcoin
+				network).
+			</div>
+			<div class="span4">
 				<i class="icon-search"></i><strong> Checking for document
 					integrity.</strong> <br /> If you store a proof for your document and later
 				re-upload it, the system will only recognize it if it is completely
@@ -68,14 +84,7 @@
 				any other slightest change, and we'll recognize it is different and
 				generate other cryptographic digest.
 			</div>
-			<div class="span4">
-				<i class="icon-time"></i><strong> Document timestamping.</strong> <br />
-				You can prove certain data exists at a certain moment of time. This
-				currently requires people to trust this site, but will soon use the
-				<a href="https://blockchain.info/">Bitcoin blockchain</a> to
-				timestamp documents, as an optional feature for a small fee
-				(required to push transactions into the Bitcoin network).
-			</div>
+
 
 
 		</div>
