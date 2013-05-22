@@ -1,0 +1,27 @@
+{
+	"order": {
+		"id":null,
+		"created_at":null,
+		"status":"completed",
+		"total_btc": {
+			"cents":100000000,
+			"currency_iso":"BTC"
+		},
+		"total_native": {
+			"cents":12230,
+			"currency_iso":"USD"
+		},
+		"custom":"56300967e9de27f5a36335f637e77678de5f83c4711eb2eda93423b555e5d233",
+		"button":{
+			"type":"buy_now",
+			"name":"Test Item",
+			"description":null,
+			"id":null
+		},
+		"transaction":{
+			"id":"519bdd2d811ae29c84000020",
+			"hash":"4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b",
+			"confirmations":0
+		}
+	}
+}

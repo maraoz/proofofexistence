@@ -5,7 +5,7 @@
 <meta charset='utf-8' />
 <meta http-equiv="X-UA-Compatible" content="chrome=1" />
 <meta name="description" content="Proof of Existence" />
-<link rel="shortcut icon" href="images/favicon.ico">
+<link rel="shortcut icon" href="/images/favicon.ico">
 <link href="/stylesheets/bootstrap/css/bootstrap.css" rel="stylesheet">
 <script type="text/javascript"
 	src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script>
@@ -28,8 +28,8 @@
 				<div class="nav-collapse collapse">
 					<ul class="nav">
 						<li><a href="/">Home</a></li>
-						<li><a href="about">About</a></li>
-						<li><a href="contact">Contact</a></li>
+						<li><a href="/about">About</a></li>
+						<li><a href="/contact">Contact</a></li>
 					</ul>
 				</div>
 				<!--/.nav-collapse -->
@@ -47,7 +47,7 @@
 		</h3>
 		<div class="row" id="timestamp">Please wait</div>
 
-		<div class="row" style="padding-top:10px;">
+		<div class="row" style="padding-top: 10px;">
 			<div class="span3" id='icon'></div>
 			<div class='alert span8' style="height: 120px; display: none;"
 				id='blockchain_message'></div>
@@ -58,19 +58,51 @@
 				existence?</h3>
 			<p>We can embed the document's digest in the blockchain for you!</p>
 			<p>
-				You'll need to pay <strong>0.0002 bitcoins</strong> to do so, as
+				You'll need to pay <strong>0.002 bitcoins</strong> to do so, as
 				required by our embedding algorithm, and you are also invited to tip
 				us with whatever value you find appropiate.
 			</p>
 
 			<p>
 				<a id='coinbase-button' class="coinbase-button"
-					data-code="2c44bee129eb3894cdfe6940d46eb078" data-custom="0000"
-					href="https://coinbase.com/checkouts/2c44bee129eb3894cdfe6940d46eb078"> [Loading...]
-				</a>
+					data-code="a4768057893eafa7b94e9904498bd0b4" data-custom="0000"
+					href="https://coinbase.com/checkouts/a4768057893eafa7b94e9904498bd0b4">
+					[Loading...] </a>
 
 			</p>
 
+		</div>
+		<div class='hero-unit' id='confirming_message' style="display: none;">
+			<p>
+				In case you are curious, we are waiting for a transaction to occur
+				in the Bitcoin network to the addresses <span id="ladd1">.</span> and
+				<span id="radd1">.</span>. This will embed the document's digest in
+				the blockchain permanently.
+			</p>
+		</div>
+		<div class='hero-unit' id='confirmed_message' style="display: none;">
+			<h3>Congratulations!</h3>
+			<p>This document's digest was successfully embedded in the
+				Bitcoin blockchain. It is now permanently certified and proven to
+				exist since the transaction was confirmed.</p>
+			<p id="tx"></p>
+			<p>If you want to confirm the document's existence manually,
+				follow this steps:
+			<ul>
+				<li>Calculate your document's SHA256 digest</li>
+				<li>Open the transaction link above.</li>
+				<li>The digest is embedded as the data payload of the two
+					addresses receiving money in that transaction.</li>
+				<li>The two addresses' Hash 160, when joined together, form the
+					document's digest. Check them at <span id="ladd2">.</span> and <span
+					id="radd2">.</span>.
+				</li>
+				<li>Alternatively you can check the Output Scripts of the
+					transaction, which perpetuate the digest permanently in the Bitcoin
+					blockchain.</li>
+
+			</ul>
+			</p>
 		</div>
 
 		<hr>

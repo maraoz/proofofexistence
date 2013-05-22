@@ -46,7 +46,7 @@ def do_coinbase_stuff(account):
 
             print "We successfully sent " + str(
                 send_transaction.amount) + " " + send_transaction.amount.currency + " to " + send_transaction.recipient_address
-
+            
             print "Your new balance is " + str(account.balance)
 
     transactions = account.transactions(count=30)

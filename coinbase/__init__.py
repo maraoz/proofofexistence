@@ -286,6 +286,7 @@ class CoinbaseAccount(object):
 
         if response_parsed['success'] == False:
             print response_parsed
+            raise ValueError, "asd"
             #TODO:  DO ERROR HANDLING and raise something
 
         return CoinbaseTransaction(response_parsed['transaction'])

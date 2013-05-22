@@ -4,16 +4,17 @@
 import webapp2, jinja2, os, hashlib
 import json as json
 import datetime
-from coinbase import CoinbaseAccount
-from embed import hide_in_address, recover_message
+from embed import hide_in_address
+import urllib
 
+from google.appengine.api import urlfetch
 from google.appengine.ext import db
 
 from model import DocumentProof
 
 SECRET = "INSERT HERE"
-COINBASE_API_KEY = "INSERT HERE"
 
+MIN_SATOSHIS = 0.002 * 100000000 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
     extensions=['jinja2.ext.autoescape'])
@@ -47,7 +48,7 @@ class RegisterHandler(JsonAPIHandler):
         if docproof:
             return {"success" : False, "reason": "existing", "digest": digest, "args": [export_timestamp(docproof), digest]}
         
-        docproof = DocumentProof(digest=digest, in_blockchain=False)
+        docproof = DocumentProof(digest=digest)
         docproof.put()
         
         return {"success": True, "digest": digest}
@@ -63,45 +64,29 @@ class DetailHandler(JsonAPIHandler):
         doc = DocumentProof.all().filter("digest = ", digest).get()
         if not doc:
             return {"success" : False}
-        return {"success": True, "digest":doc.digest, "timestamp":export_timestamp(doc), "in_blockchain": doc.in_blockchain}
+        return {
+            "success": True,
+            "digest":doc.digest,
+            "timestamp":export_timestamp(doc),
+            "ladd": doc.ladd,
+            "radd": doc.radd,
+            "tx" : doc.tx
+        }
 
 class PaymentCallback(JsonAPIHandler):
     def handle(self):
-        """
-        {
-            "order": {
-                "id": "5RTQNACF",
-                "created_at": "2012-12-09T21:23:41-08:00",
-                "status": "completed",
-                "total_btc": {
-                    "cents": 100000000,
-                    "currency_iso": "BTC"
-                },
-                "total_native": {
-                    "cents": 1253,
-                    "currency_iso": "USD"
-                },
-                "custom": "order1234",
-                "button": {
-                    "type": "buy_now",
-                    "name": "Alpaca Socks",
-                    "description": "The ultimate in lightweight footwear",
-                    "id": "5d37a3b61914d6d0ad15b5135d80c19f"
-                },
-                "transaction": {
-                    "id": "514f18b7a5ea3d630a00000f",
-                    "hash": "4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b",
-                    "confirmations": 0
-                }
-            }
-        }
-        """
-        d = self.request.get("d") # json["order"]["custom"]
-        secret = self.request.get("secret")
-        if len(d) != 64 or secret != SECRET:
-            return {"success" : False}
+        j = json.loads(self.request.body)  # json["order"]["custom"]
+        order = j["order"]
+        d = order["custom"]
+        satoshis = order["total_btc"]["cents"]
         
-        account = CoinbaseAccount(api_key=COINBASE_API_KEY)
+        secret = self.request.get("secret")
+        if len(d) != 64 or secret != SECRET or satoshis < MIN_SATOSHIS:
+            return {"success" : False, "reason" : "format or payment below " + str(MIN_SATOSHIS)}
+        
+        doc = DocumentProof.all().filter("digest = ", d).get()
+        if not doc:
+            return {"success" : False, "reason" : "Couldnt find document"}
         
         reduced = d.decode('hex')  # 32 bytes
         left = bytes(reduced[:20])
@@ -110,12 +95,44 @@ class PaymentCallback(JsonAPIHandler):
         ladd = hide_in_address(left)
         radd = hide_in_address(right)
         
-        return {"success" : True, "sell" : account.buy_price(), "addrs" : [ladd, radd]}
+        doc.ladd = ladd
+        doc.radd = radd
+        doc.put()
+        
+        return {"success" : True, "addrs" : [doc.ladd, doc.radd]}
+
+class CheckHandler(JsonAPIHandler):
+    def get_txs(self, addr):
+        url = "http://blockchain.info/address/%s?format=json&limit=5" % (addr)
+        result = urlfetch.fetch(url)
+        if result.status_code == 200:
+            j = json.loads(result.content)
+            return [tx["hash"] for tx in j["txs"]]
+        else:
+            return None
+        
+    def handle(self):
+        digest = self.request.get("d")
+        doc = DocumentProof.all().filter("digest = ", digest).get()
+        if not doc or not doc.ladd or not doc.radd or doc.tx:
+            return {"success" : False, "error": "format"}
+        
+        ltxs = self.get_txs(doc.ladd)
+        rtxs = self.get_txs(doc.radd)
+        if not ltxs or not rtxs:
+            return {"success" : False, "error": "no transactions" + str(ltxs) + str(rtxs)}
+        intersection = [tx for tx in ltxs if tx in rtxs]
+        if len(intersection) == 0:
+            return {"success" : False, "error": "no intersecting"}
+        doc.tx = intersection[0]
+        doc.put()
+        return {"success" : True, "tx" : doc.tx}
 
 app = webapp2.WSGIApplication([
     ('/api/register', RegisterHandler),
     ('/api/latest', LatestHandler),
     ('/api/detail', DetailHandler),
-    ('/api/callback', PaymentCallback)
+    ('/api/callback', PaymentCallback),
+    ('/api/check', CheckHandler)
 ], debug=False)
 
