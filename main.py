@@ -5,7 +5,6 @@ import webapp2, jinja2, os, hashlib
 import json as json
 import datetime
 from embed import hide_in_address
-import urllib
 
 from google.appengine.api import urlfetch
 from google.appengine.ext import db
@@ -14,7 +13,8 @@ from model import DocumentProof
 
 SECRET = "INSERT HERE"
 
-MIN_SATOSHIS = 0.002 * 100000000 
+
+MIN_SATOSHIS = 0.005 * 100000000 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
     extensions=['jinja2.ext.autoescape'])
