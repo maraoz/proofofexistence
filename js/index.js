@@ -2,8 +2,8 @@ $(document).ready(function() {
 
 	var message = {
 		"format" : "Must select a file to upload",
-		"existing" : "File already exists in the system since %s. Proof code: %s",
-		"added" : "File successfully added to system. Proof code: %s"
+		"existing" : "File already exists in the system since %s. Proof code: %s. Redirecting...",
+		"added" : "File successfully added to system. Proof code: %s. Redirecting..."
 	}
 
 	var refreshLatest = function() {
@@ -65,7 +65,7 @@ $(document).ready(function() {
 				if (json.digest) {
 					window.setTimeout(function() {
 						window.location.replace("/detail/"+json.digest);
-					}, 5000);
+					}, 3000);
 				}
 			}
 		});
