@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 
-import webapp2, jinja2, os, hashlib
+import webapp2, jinja2, os, hashlib, logging
 import json as json
 import datetime
 from embed import hide_in_address
@@ -12,6 +12,7 @@ from google.appengine.ext import db
 from model import DocumentProof
 
 SECRET = "INSERT HERE"
+
 
 
 MIN_SATOSHIS = 0.005 * 100000000 
@@ -37,26 +38,43 @@ class JsonAPIHandler(webapp2.RequestHandler):
         self.response.write(json.dumps(resp, default=dthandler))
 
 
-class RegisterHandler(JsonAPIHandler):
+class DigestStoreHandler(JsonAPIHandler):
+    def store_digest(self, digest):
+        docproof = DocumentProof.all().filter("digest = ", digest).get()
+        if docproof:
+            return {"success" : False, "reason": "existing", "digest": digest, "args": [export_timestamp(docproof)]}
+        
+        docproof = DocumentProof(digest=digest)
+        docproof.put()
+        
+        return {"success": True, "digest": digest}
+ 
+class UploadHandler(DigestStoreHandler):    
     def handle(self):
         document = self.request.get("d")
         if not document:
             return {"success" : False, "reason" : "format"}
         digest = hash_digest(document)
         
-        docproof = DocumentProof.all().filter("digest = ", digest).get()
-        if docproof:
-            return {"success" : False, "reason": "existing", "digest": digest, "args": [export_timestamp(docproof), digest]}
+        return self.store_digest(digest)
+
+class RegisterHandler(DigestStoreHandler):
+    def handle(self):
+        digest = self.request.get("d") #expects client-side hashing
+        if not digest or len(digest) != 64:
+            return {"success" : False, "reason" : "format"}
         
-        docproof = DocumentProof(digest=digest)
-        docproof.put()
-        
-        return {"success": True, "digest": digest}
+        return self.store_digest(digest)
     
+
 class LatestHandler(JsonAPIHandler):
     def handle(self):
-        latest = DocumentProof.all().order("-timestamp").run(limit=5)
-        return [{"digest":doc.digest, "timestamp":export_timestamp(doc)} for doc in latest]
+        confirmed = self.request.get("confirmed")
+        query = DocumentProof.all()
+        if confirmed and confirmed == "true":
+            query = query.filter("tx !=", None).order("tx")
+        latest = query.order("-timestamp").run(limit=5)
+        return [{"digest":doc.digest, "timestamp":export_timestamp(doc), "tx": doc.tx} for doc in latest]
     
 class DetailHandler(JsonAPIHandler):
     def handle(self):
@@ -109,6 +127,7 @@ class CheckHandler(JsonAPIHandler):
             j = json.loads(result.content)
             return [tx["hash"] for tx in j["txs"]]
         else:
+            logging.error("Error accessing blockchain API: "+result.status_code)
             return None
         
     def handle(self):
@@ -120,7 +139,7 @@ class CheckHandler(JsonAPIHandler):
         ltxs = self.get_txs(doc.ladd)
         rtxs = self.get_txs(doc.radd)
         if not ltxs or not rtxs:
-            return {"success" : False, "error": "no transactions" + str(ltxs) + str(rtxs)}
+            return {"success" : False, "error": "no transactions"}
         intersection = [tx for tx in ltxs if tx in rtxs]
         if len(intersection) == 0:
             return {"success" : False, "error": "no intersecting"}
@@ -128,11 +147,18 @@ class CheckHandler(JsonAPIHandler):
         doc.put()
         return {"success" : True, "tx" : doc.tx}
 
+class PendingHandler(JsonAPIHandler):
+    def handle(self):
+        pending = DocumentProof.all().filter("ladd != ", None).filter("tx =", None).run()
+        return [d.digest for d in pending]
+
 app = webapp2.WSGIApplication([
     ('/api/register', RegisterHandler),
+    ('/api/upload', UploadHandler),
     ('/api/latest', LatestHandler),
     ('/api/detail', DetailHandler),
     ('/api/callback', PaymentCallback),
-    ('/api/check', CheckHandler)
+    ('/api/check', CheckHandler),
+    ('/api/pending', PendingHandler)
 ], debug=False)
 

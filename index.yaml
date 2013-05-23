@@ -10,6 +10,17 @@ indexes:
 # automatically uploaded to the admin console when you next deploy
 # your application using appcfg.py.
 
+- kind: DocumentProof
+  properties:
+  - name: tx
+  - name: ladd
+
+- kind: DocumentProof
+  properties:
+  - name: tx
+  - name: timestamp
+    direction: desc
+
 - kind: Player
   properties:
   - name: searching

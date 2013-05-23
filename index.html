@@ -10,9 +10,10 @@
 <script type="text/javascript"
 	src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script>
 
-<script type="text/javascript" src="js/jquery.form.js"></script>
-<script type="text/javascript" src="js/sprintf.js"></script>
-<script type="text/javascript" src="js/index.js"></script>
+<script type="text/javascript" src="/js/crypto.js"></script>
+<script type="text/javascript" src="/js/jquery.form.js"></script>
+<script type="text/javascript" src="/js/sprintf.js"></script>
+<script type="text/javascript" src="/js/index.js"></script>
 
 <title>Proof Of Existence</title>
 </head>
@@ -46,31 +47,35 @@
 		<div class="span12">.</div>
 
 		<div class="hero-unit">
-			<form id="upload_form" method="POST" enctype="multipart/form-data"
-				action="api/register">
+			<legend>
+				Select a document and have it certified by the Bitcoin
+				blockchain <small><a href="/about">What?</a></small>
+			</legend>
+			<form id="upload_form" method="POST"
+				enctype="multipart/form-data" action="api/upload">
 				<fieldset>
-					<legend>Upload a document and have it certified by the Bitcoin blockchain <small><a href="/about">What?</a></small></legend>
 					<input class="" id='file' type="file" name="d" />
-					<button id="upload_submit" type="submit" class="btn btn-success">
-						<i class="icon-file"></i> Submit
+					<button id="upload_submit" style="display:none;" type="submit" class="btn btn-success">
+						<i class="icon-file"></i> Upload
 					</button>
 					<br /> <br />
-					<div class="progress progress-striped active">
-						<div class="bar"></div>
-					</div>
-
-					<div style="display: none;" class="slidingDiv alert">message</div>
 				</fieldset>
 			</form>
+			<div id="explain">Your document will <strong>not</strong> be uploaded. The cryptographic digest is calculated client-side.</div>
+			<div class="progress progress-striped">
+				<div class="bar"></div>
+			</div>
+
+			<div style="display: none;" class="slidingDiv alert">message</div>
 		</div>
 
 		<div class="row">
-			<div class="span9">
+			<div class="span10">
 				<h3>Last documents uploaded:</h3>
 				<table class="table" id="latest"></table>
 			</div>
-			<div class="span3" style="margin-top: 100px;">
-				If you find this useful please consider donating: <br /><br />
+			<div class="span2" style="margin-top: 100px;">
+				If you find this useful please consider donating: <br /> <br />
 
 				<script>
 					var CoinWidget_Config = {
@@ -79,10 +84,16 @@
 						text_label : 'Donate to this Bitcoin address:'
 					};
 				</script>
- 				<script src="http://c.coinwidget.com/widget.js"></script>
+				<script src="http://c.coinwidget.com/widget.js"></script>
 
 			</div>
 		</div>
+<!-- 		<div class="row"> -->
+<!-- 			<div class="span10"> -->
+<!-- 				<h3>Last documents confirmed in the blockchain:</h3> -->
+<!-- 				<table class="table" id="latest_confirmed"></table> -->
+<!-- 			</div> -->
+<!-- 		</div> -->
 
 
 		<div class="row"></div>
