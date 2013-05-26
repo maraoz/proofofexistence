@@ -14,8 +14,9 @@ from model import DocumentProof
 SECRET = "INSERT HERE"
 
 
-
-MIN_SATOSHIS = 0.005 * 100000000 
+DONATION_ADDRESS = "17Ab2P14CJ7FMJF6ARVQ7oVrA3iA5RFP6G"
+BTC_TO_SATOSHI = 100000000
+MIN_SATOSHIS = 0.005 * BTC_TO_SATOSHI
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
     extensions=['jinja2.ext.autoescape'])
@@ -121,7 +122,7 @@ class PaymentCallback(JsonAPIHandler):
 
 class CheckHandler(JsonAPIHandler):
     def get_txs(self, addr):
-        url = "http://blockchain.info/address/%s?format=json&limit=5" % (addr)
+        url = "https://blockchain.info/address/%s?format=json&limit=5" % (addr)
         result = urlfetch.fetch(url)
         if result.status_code == 200:
             j = json.loads(result.content)
@@ -152,6 +153,28 @@ class PendingHandler(JsonAPIHandler):
         pending = DocumentProof.all().filter("ladd != ", None).filter("tx =", None).run()
         return [d.digest for d in pending]
 
+class WidgetJSHandler(webapp2.RequestHandler):
+    def get_info(self):
+        url = "https://blockchain.info/address/%s?format=json" % (DONATION_ADDRESS)
+        result = urlfetch.fetch(url)
+        if result.status_code == 200:
+            j = json.loads(result.content)
+            return (j["n_tx"], j["total_received"]/float(BTC_TO_SATOSHI))
+        else:
+            logging.error("Error accessing blockchain API: "+result.status_code)
+            return None
+    def get(self):
+        counter, amount = self.get_info()
+        self.response.write("""
+        setTimeout(function(){
+            CoinWidget.build({
+                'counter': %d,
+                'amount': %f,
+                'cache': 0
+            },1);
+        },300);
+        """ % (counter, amount))
+
 app = webapp2.WSGIApplication([
     ('/api/register', RegisterHandler),
     ('/api/upload', UploadHandler),
@@ -159,6 +182,7 @@ app = webapp2.WSGIApplication([
     ('/api/detail', DetailHandler),
     ('/api/callback', PaymentCallback),
     ('/api/check', CheckHandler),
-    ('/api/pending', PendingHandler)
+    ('/api/pending', PendingHandler),
+    ('/api/widget.js', WidgetJSHandler)
 ], debug=False)
 
