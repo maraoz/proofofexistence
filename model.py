@@ -13,4 +13,5 @@ class DocumentProof(db.Model):
 class LatestConfirmedDocuments(db.Model):
     """Helper table for latest confirmed documents retrieval"""
     
-    digests = db.ListProperty()
+    digests = db.ListProperty(db.Key)
+    

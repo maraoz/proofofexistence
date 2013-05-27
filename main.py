@@ -9,11 +9,11 @@ from embed import hide_in_address
 from google.appengine.api import urlfetch
 from google.appengine.ext import db
 
-from model import DocumentProof
+from model import DocumentProof, LatestConfirmedDocuments
 
 SECRET = "INSERT HERE"
 
-
+LATEST_N = 5
 DONATION_ADDRESS = "17Ab2P14CJ7FMJF6ARVQ7oVrA3iA5RFP6G"
 BTC_TO_SATOSHI = 100000000
 MIN_SATOSHIS = 0.005 * BTC_TO_SATOSHI
@@ -35,6 +35,7 @@ class JsonAPIHandler(webapp2.RequestHandler):
         self.get()
     def get(self):
         resp = self.handle()
+        self.response.headers['Content-Type'] = "application/json"
         dthandler = lambda obj: obj.isoformat() if isinstance(obj, datetime.datetime) else None
         self.response.write(json.dumps(resp, default=dthandler))
 
@@ -67,14 +68,39 @@ class RegisterHandler(DigestStoreHandler):
         
         return self.store_digest(digest)
     
+class BootstrapHandler(JsonAPIHandler):
+    def handle_a(self):
+        if LatestConfirmedDocuments.all().get():
+            return {"success" : False}
+        n = LatestConfirmedDocuments()
+        n.put()
+        return {"success" : True}
+    
+    def handle_b(self):
+        confirmed = DocumentProof.all().filter("tx !=",None).run()
+        confirmed = sorted(confirmed, key=lambda d: d.timestamp, reverse=True)
+        bag = LatestConfirmedDocuments.all().get()
+        bag.digests = [c.key() for c in confirmed[:LATEST_N]]
+        bag.put()
+        return [str(c) for c in bag.digests]
+    
+    def handle(self):
+        if self.request.get("a"):
+            return self.handle_a()
+        elif self.request.get("b"):
+            return self.handle_b()
+        else:
+            return {"bootstrap" : False}
 
 class LatestHandler(JsonAPIHandler):
     def handle(self):
         confirmed = self.request.get("confirmed")
-        query = DocumentProof.all()
+        latest = []
         if confirmed and confirmed == "true":
-            query = query.filter("tx !=", None).order("tx")
-        latest = query.order("-timestamp").run(limit=5)
+            bag = LatestConfirmedDocuments.all().get()
+            latest = DocumentProof.get(bag.digests)
+        else:
+            latest = DocumentProof.all().order("-timestamp").run(limit=LATEST_N)
         return [{"digest":doc.digest, "timestamp":export_timestamp(doc), "tx": doc.tx} for doc in latest]
     
 class DetailHandler(JsonAPIHandler):
@@ -144,8 +170,14 @@ class CheckHandler(JsonAPIHandler):
         intersection = [tx for tx in ltxs if tx in rtxs]
         if len(intersection) == 0:
             return {"success" : False, "error": "no intersecting"}
+        
         doc.tx = intersection[0]
         doc.put()
+        
+        bag = LatestConfirmedDocuments.all().get()
+        bag.digests = [doc.key()]+bag.digests[:-1]
+        bag.put()
+        
         return {"success" : True, "tx" : doc.tx}
 
 class PendingHandler(JsonAPIHandler):
@@ -164,6 +196,7 @@ class WidgetJSHandler(webapp2.RequestHandler):
             logging.error("Error accessing blockchain API: "+result.status_code)
             return None
     def get(self):
+        self.response.headers['Content-Type'] = "text/javascript"
         counter, amount = self.get_info()
         self.response.write("""
         setTimeout(function(){
@@ -183,6 +216,7 @@ app = webapp2.WSGIApplication([
     ('/api/callback', PaymentCallback),
     ('/api/check', CheckHandler),
     ('/api/pending', PendingHandler),
-    ('/api/widget.js', WidgetJSHandler)
+    ('/api/widget.js', WidgetJSHandler),
+    ('/api/bootstrap', BootstrapHandler)
 ], debug=False)
 

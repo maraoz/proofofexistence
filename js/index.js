@@ -49,7 +49,7 @@ $(document).ready(function() {
 		});
 	}
 	refreshLatest("false", latest);
-	//refreshLatest("true", latest_confirmed);
+	refreshLatest("true", latest_confirmed);
 
 	// client-side hash
 	var onRegisterSuccess = function(json) {
