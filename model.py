@@ -9,6 +9,8 @@ class DocumentProof(db.Model):
     tx = db.StringProperty()
     
     timestamp = db.DateTimeProperty(auto_now_add=True)
+
+class LatestConfirmedDocuments(db.Model):
+    """Helper table for latest confirmed documents retrieval"""
     
-    
-    
+    digests = db.ListProperty()
