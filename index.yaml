@@ -12,6 +12,11 @@ indexes:
 
 - kind: DocumentProof
   properties:
+  - name: blockstamp
+  - name: tx
+
+- kind: DocumentProof
+  properties:
   - name: tx
   - name: ladd
 

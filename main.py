@@ -13,6 +13,7 @@ from model import DocumentProof, LatestConfirmedDocuments
 
 SECRET = "INSERT HERE"
 
+
 LATEST_N = 5
 DONATION_ADDRESS = "17Ab2P14CJ7FMJF6ARVQ7oVrA3iA5RFP6G"
 BTC_TO_SATOSHI = 100000000
@@ -27,8 +28,10 @@ def hash_digest(x):
     hasher.update(x)
     return hasher.hexdigest()
 
-def export_timestamp(doc):
-    return doc.timestamp.strftime("%Y-%m-%d %H:%M:%S")
+def export_timestamp(timestamp):
+    if not timestamp:
+        return None
+    return timestamp.strftime("%Y-%m-%d %H:%M:%S")
 
 class JsonAPIHandler(webapp2.RequestHandler):
     def post(self):
@@ -44,7 +47,7 @@ class DigestStoreHandler(JsonAPIHandler):
     def store_digest(self, digest):
         docproof = DocumentProof.all().filter("digest = ", digest).get()
         if docproof:
-            return {"success" : False, "reason": "existing", "digest": digest, "args": [export_timestamp(docproof)]}
+            return {"success" : False, "reason": "existing", "digest": digest, "args": [export_timestamp(docproof.timestamp)]}
         
         docproof = DocumentProof(digest=digest)
         docproof.put()
@@ -69,17 +72,33 @@ class RegisterHandler(DigestStoreHandler):
         return self.store_digest(digest)
     
 class BootstrapHandler(JsonAPIHandler):
+    def get_blockstamp(self, tx):
+        tx = "de3c556e00b07c2f692ed9f89f19f06ebd46eb49a323f11b90489af5785f5be7"
+        url = "https://blockchain.info/tx/%s?format=json" % (tx)
+        result = urlfetch.fetch(url)
+        if result.status_code == 200:
+            j = json.loads(result.content)
+            print j
+            return float(j["time"])
+        else:
+            logging.error("Error accessing blockchain API: "+str(result.status_code))
+            return None
     def handle_a(self):
-        if LatestConfirmedDocuments.all().get():
-            return {"success" : False}
-        n = LatestConfirmedDocuments()
-        n.put()
-        return {"success" : True}
+        confirmed = DocumentProof.all().filter("tx !=",None).run()
+        digests = []
+        for c in confirmed:
+            if c.blockstamp:
+                continue
+            blockstamp = self.get_blockstamp(c.tx)
+            c.blockstamp = datetime.datetime.fromtimestamp(blockstamp)
+            c.put()
+            digests.append(c.digest)
+        return {"success" : True, "processed": digests}
     
     def handle_b(self):
         confirmed = DocumentProof.all().filter("tx !=",None).run()
         confirmed = sorted(confirmed, key=lambda d: d.timestamp, reverse=True)
-        bag = LatestConfirmedDocuments.all().get()
+        bag = LatestConfirmedDocuments.get_inst()
         bag.digests = [c.key() for c in confirmed[:LATEST_N]]
         bag.put()
         return [str(c) for c in bag.digests]
@@ -97,11 +116,11 @@ class LatestHandler(JsonAPIHandler):
         confirmed = self.request.get("confirmed")
         latest = []
         if confirmed and confirmed == "true":
-            bag = LatestConfirmedDocuments.all().get()
+            bag = LatestConfirmedDocuments.get_inst()
             latest = DocumentProof.get(bag.digests)
         else:
             latest = DocumentProof.all().order("-timestamp").run(limit=LATEST_N)
-        return [{"digest":doc.digest, "timestamp":export_timestamp(doc), "tx": doc.tx} for doc in latest]
+        return [{"digest":doc.digest, "timestamp":export_timestamp(doc.timestamp), "tx": doc.tx} for doc in latest]
     
 class DetailHandler(JsonAPIHandler):
     def handle(self):
@@ -112,10 +131,11 @@ class DetailHandler(JsonAPIHandler):
         return {
             "success": True,
             "digest":doc.digest,
-            "timestamp":export_timestamp(doc),
+            "timestamp":export_timestamp(doc.timestamp),
             "ladd": doc.ladd,
             "radd": doc.radd,
-            "tx" : doc.tx
+            "tx" : doc.tx,
+            "blockstamp": export_timestamp(doc.blockstamp)
         }
 
 class PaymentCallback(JsonAPIHandler):
@@ -152,7 +172,7 @@ class CheckHandler(JsonAPIHandler):
         result = urlfetch.fetch(url)
         if result.status_code == 200:
             j = json.loads(result.content)
-            return [tx["hash"] for tx in j["txs"]]
+            return [(tx["hash"], tx["time"]) for tx in j["txs"]]
         else:
             logging.error("Error accessing blockchain API: "+result.status_code)
             return None
@@ -171,10 +191,11 @@ class CheckHandler(JsonAPIHandler):
         if len(intersection) == 0:
             return {"success" : False, "error": "no intersecting"}
         
-        doc.tx = intersection[0]
+        doc.tx = intersection[0][0]
+        doc.blockstamp = datetime.datetime.fromtimestamp(intersection[0][1])
         doc.put()
         
-        bag = LatestConfirmedDocuments.all().get()
+        bag = LatestConfirmedDocuments.get_inst()
         bag.digests = [doc.key()]+bag.digests[:-1]
         bag.put()
         

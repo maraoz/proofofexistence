@@ -31,7 +31,11 @@ $(document).ready(function() {
 			confirming_message.hide();
 			blockchain_message.show();
 			digest.html(data.digest);
-			timestamp.html("Registered in our servers since: <strong>"+data.timestamp+"</strong>");
+			var times = "Registered in our servers since: <strong>"+data.timestamp+"</strong><br /><br />";
+			if (data.blockstamp) {
+				times += "Registered in the bitcoin blockchain since: <strong>"+data.blockstamp+"</strong> (transaction timestamp)<br /><br />";
+			}
+			timestamp.html(times);
 			var msg = "";
 			var clz = "";
 			var in_blockchain = data.tx != null;
