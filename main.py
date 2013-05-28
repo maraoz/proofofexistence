@@ -73,7 +73,6 @@ class RegisterHandler(DigestStoreHandler):
     
 class BootstrapHandler(JsonAPIHandler):
     def get_blockstamp(self, tx):
-        tx = "de3c556e00b07c2f692ed9f89f19f06ebd46eb49a323f11b90489af5785f5be7"
         url = "https://blockchain.info/tx/%s?format=json" % (tx)
         result = urlfetch.fetch(url)
         if result.status_code == 200:
