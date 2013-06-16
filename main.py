@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 
-import webapp2, jinja2, os, hashlib, logging
+import webapp2, jinja2, os, hashlib, logging, urllib
 import json as json
 import datetime
 from embed import hide_in_address
@@ -12,12 +12,19 @@ from google.appengine.ext import db
 from model import DocumentProof, LatestConfirmedDocuments
 
 SECRET = "INSERT HERE"
+BLOCKCHAIN_GUID = "INSERT HERE"
+BLOCKCHAIN_ACCESS_1 = "INSERT HERE"
+BLOCKCHAIN_ACCESS_2 = "INSERT HERE"
 
 
+
+BTC_TO_SATOSHI = 100000000
+BLOCKCHAIN_FEE = int(0.0001 * BTC_TO_SATOSHI) 
 LATEST_N = 5
 DONATION_ADDRESS = "17Ab2P14CJ7FMJF6ARVQ7oVrA3iA5RFP6G"
-BTC_TO_SATOSHI = 100000000
-MIN_SATOSHIS = 0.005 * BTC_TO_SATOSHI
+POE_PAYMENTS_ADDRESS = "11xP3sjdQy4QgP47RNHLH6DnKXWWVfb6B"
+SATOSHI = 1
+MIN_SATOSHIS = int(0.005 * BTC_TO_SATOSHI)
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
     extensions=['jinja2.ext.autoescape'])
@@ -173,7 +180,7 @@ class CheckHandler(JsonAPIHandler):
             j = json.loads(result.content)
             return [(tx["hash"], tx["time"]) for tx in j["txs"]]
         else:
-            logging.error("Error accessing blockchain API: "+result.status_code)
+            logging.error("Error accessing blockchain API: "+str(result.status_code))
             return None
         
     def handle(self):
@@ -200,11 +207,53 @@ class CheckHandler(JsonAPIHandler):
         
         return {"success" : True, "tx" : doc.tx}
 
-class PendingHandler(JsonAPIHandler):
-    def handle(self):
+class PendingHandler(webapp2.RequestHandler):
+    def get(self):
         pending = DocumentProof.all().filter("ladd != ", None).filter("tx =", None).run()
-        return [d.digest for d in pending]
+        for d in pending:
+            self.response.write('<a href="/api/autopay?d=%s">%s</a><br /><br />' % (d.digest,d.digest))
+             
+class AutopayHandler(JsonAPIHandler):
+    def has_txs(self, addr):
+        url = "https://blockchain.info/address/%s?format=json&limit=1" % (addr)
+        result = urlfetch.fetch(url)
+        if result.status_code == 200:
+            j = json.loads(result.content)
+            return len(j["txs"]) > 0
+        else:
+            logging.error("Error accessing blockchain API: "+str(result.status_code))
+            return True
 
+    def do_pay(self, d, ladd, radd):
+        recipients = json.dumps({
+                             ladd : SATOSHI,
+                             radd: SATOSHI    
+                                 }, separators=(',',':'))
+        note_encode = urllib.urlencode({"note":"http://www.proofofexistence.com/detail/"+d})
+        data = (BLOCKCHAIN_GUID, BLOCKCHAIN_ACCESS_1, BLOCKCHAIN_ACCESS_2, recipients, BLOCKCHAIN_FEE, POE_PAYMENTS_ADDRESS, note_encode)
+        url = 'https://blockchain.info/merchant/%s/sendmany?password=%s&second_password=%s&recipients=%s&shared=false&fee=%d&from=%s&%s' % data
+        result = urlfetch.fetch(url)
+        if result.status_code == 200:
+            j = json.loads(result.content)
+            return (j["message"], j["tx_hash"])
+        else:
+            logging.error("Error accessing blockchain API: "+str(result.status_code))
+            return (None, None)
+    
+    def handle(self):
+        digest = self.request.get("d")
+        doc = DocumentProof.all().filter("digest = ", digest).get()
+        if not doc or not doc.ladd or not doc.radd or doc.tx:
+            return {"success" : False, "error": "format"}
+        if self.has_txs(doc.ladd):
+            return {"success" : False, "error": "ladd"}
+        if self.has_txs(doc.radd):
+            return {"success" : False, "error": "radd"}
+        message, tx = self.do_pay(doc.digest, doc.ladd, doc.radd)
+        doc.tx = tx
+        doc.put()
+        return {"success" : True, "tx" : tx, "message" : message}
+    
 class WidgetJSHandler(webapp2.RequestHandler):
     def get_info(self):
         url = "https://blockchain.info/address/%s?format=json" % (DONATION_ADDRESS)
@@ -213,8 +262,8 @@ class WidgetJSHandler(webapp2.RequestHandler):
             j = json.loads(result.content)
             return (j["n_tx"], j["total_received"]/float(BTC_TO_SATOSHI))
         else:
-            logging.error("Error accessing blockchain API: "+result.status_code)
-            return None
+            logging.error("Error accessing blockchain API: "+str(result.status_code))
+            return (None, None)
     def get(self):
         self.response.headers['Content-Type'] = "text/javascript"
         counter, amount = self.get_info()
@@ -227,6 +276,19 @@ class WidgetJSHandler(webapp2.RequestHandler):
             },1);
         },300);
         """ % (counter, amount))
+        
+        
+class ExternalRegisterHandler(DigestStoreHandler):
+    def handle(self):
+        digest = self.request.get("d") #expects client-side hashing
+        if not digest or len(digest) != 64:
+            return {"success" : False, "reason" : "format"}
+        
+        return self.store_digest(digest)
+
+class ExternalStatusHandler(JsonAPIHandler):
+    def handle(self):
+        return {}
 
 app = webapp2.WSGIApplication([
     ('/api/register', RegisterHandler),
@@ -236,7 +298,12 @@ app = webapp2.WSGIApplication([
     ('/api/callback', PaymentCallback),
     ('/api/check', CheckHandler),
     ('/api/pending', PendingHandler),
+    ('/api/autopay', AutopayHandler),
     ('/api/widget.js', WidgetJSHandler),
-    ('/api/bootstrap', BootstrapHandler)
+    ('/api/bootstrap', BootstrapHandler),
+    
+    #public API
+    ('/api/v1/register', ExternalRegisterHandler),
+    ('/api/v1/status', ExternalStatusHandler)
 ], debug=False)
 
