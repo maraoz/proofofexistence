@@ -279,12 +279,39 @@ class WidgetJSHandler(webapp2.RequestHandler):
         
         
 class ExternalRegisterHandler(DigestStoreHandler):
+    
+    def do_pay(self, d, ladd, radd):
+        recipients = json.dumps({
+                             ladd : SATOSHI,
+                             radd: SATOSHI    
+                                 }, separators=(',',':'))
+        note_encode = urllib.urlencode({"note":"http://www.proofofexistence.com/detail/"+d})
+        data = (BLOCKCHAIN_GUID, BLOCKCHAIN_ACCESS_1, BLOCKCHAIN_ACCESS_2, recipients, BLOCKCHAIN_FEE, POE_PAYMENTS_ADDRESS, note_encode)
+        url = 'https://blockchain.info/merchant/%s/sendmany?password=%s&second_password=%s&recipients=%s&shared=false&fee=%d&from=%s&%s' % data
+        result = urlfetch.fetch(url)
+        if result.status_code == 200:
+            j = json.loads(result.content)
+            return (j["message"], j["tx_hash"])
+        else:
+            logging.error("Error accessing blockchain API: "+str(result.status_code))
+            return (None, None)
+    
     def handle(self):
         digest = self.request.get("d") #expects client-side hashing
         if not digest or len(digest) != 64:
             return {"success" : False, "reason" : "format"}
         
-        return self.store_digest(digest)
+        ret = self.store_digest(digest)
+        if not ret["success"]:
+            del ret["args"]
+            return ret
+        
+        
+        
+        
+        return ret
+            
+             
 
 class ExternalStatusHandler(JsonAPIHandler):
     def handle(self):

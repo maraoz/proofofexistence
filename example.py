@@ -62,5 +62,8 @@ def do_coinbase_stuff(account):
 
 
 if __name__ == '__main__':
-    account = CoinbaseAccount(api_key="a755ebc70032aa69401be3ecce30457af836d4ceb42a922e19a7a0870933dc5e")
+    COINBASE_API_KEY = "INSERT HERE"
+    
+    
+    account = CoinbaseAccount(api_key=COINBASE_API_KEY)
     do_coinbase_stuff(account=account)
