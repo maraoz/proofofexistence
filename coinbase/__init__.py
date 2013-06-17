@@ -379,4 +379,4 @@ class CoinbaseAccount(object):
             }
         }
         response = self.session.post(url=url, data=json.dumps(request_data), params=self.global_request_params)
-        return response.json()['address']
+        return response.json()

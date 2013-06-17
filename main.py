@@ -10,11 +10,14 @@ from google.appengine.api import urlfetch
 from google.appengine.ext import db
 
 from model import DocumentProof, LatestConfirmedDocuments
+from coinbase import CoinbaseAccount
 
 SECRET = "INSERT HERE"
 BLOCKCHAIN_GUID = "INSERT HERE"
 BLOCKCHAIN_ACCESS_1 = "INSERT HERE"
 BLOCKCHAIN_ACCESS_2 = "INSERT HERE"
+COINBASE_API_KEY = "INSERT HERE"
+
 
 
 
@@ -24,7 +27,7 @@ LATEST_N = 5
 DONATION_ADDRESS = "17Ab2P14CJ7FMJF6ARVQ7oVrA3iA5RFP6G"
 POE_PAYMENTS_ADDRESS = "11xP3sjdQy4QgP47RNHLH6DnKXWWVfb6B"
 SATOSHI = 1
-MIN_SATOSHIS = int(0.005 * BTC_TO_SATOSHI)
+MIN_SATOSHIS_PAYMENT = int(0.005 * BTC_TO_SATOSHI)
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
     extensions=['jinja2.ext.autoescape'])
@@ -144,22 +147,18 @@ class DetailHandler(JsonAPIHandler):
             "blockstamp": export_timestamp(doc.blockstamp)
         }
 
-class PaymentCallback(JsonAPIHandler):
-    def handle(self):
-        j = json.loads(self.request.body)  # json["order"]["custom"]
-        order = j["order"]
-        d = order["custom"]
-        satoshis = order["total_btc"]["cents"]
-        
+class BasePaymentCallback(JsonAPIHandler):
+    def process_payment(self, satoshis, digest):
         secret = self.request.get("secret")
-        if len(d) != 64 or secret != SECRET or satoshis < MIN_SATOSHIS:
-            return {"success" : False, "reason" : "format or payment below " + str(MIN_SATOSHIS)}
+        if len(digest) != 64 or secret != SECRET or satoshis < MIN_SATOSHIS_PAYMENT:
+            print len(digest), secret != SECRET, satoshis, MIN_SATOSHIS_PAYMENT
+            return {"success" : False, "reason" : "format or payment below " + str(MIN_SATOSHIS_PAYMENT)}
         
-        doc = DocumentProof.all().filter("digest = ", d).get()
+        doc = DocumentProof.all().filter("digest = ", digest).get()
         if not doc:
             return {"success" : False, "reason" : "Couldnt find document"}
         
-        reduced = d.decode('hex')  # 32 bytes
+        reduced = digest.decode('hex')  # 32 bytes
         left = bytes(reduced[:20])
         right = bytes(reduced[20:] + "\0"*8)
         
@@ -171,6 +170,25 @@ class PaymentCallback(JsonAPIHandler):
         doc.put()
         
         return {"success" : True, "addrs" : [doc.ladd, doc.radd]}
+
+class PaymentCallback(BasePaymentCallback):
+    def handle(self):
+        j = json.loads(self.request.body)
+        order = j["order"]
+        d = order["custom"]
+        satoshis = order["total_btc"]["cents"]
+        return self.process_payment(satoshis, d)
+
+class ApiPaymentCallback(BasePaymentCallback):
+    def handle(self):
+        print self.request.body
+        j = json.loads(self.request.body)
+        satoshis = int(j["amount"] * BTC_TO_SATOSHI)
+        digest = self.request.get("d")
+        print digest, self.request.get("secret")
+        return self.process_payment(satoshis, digest)
+        
+    
 
 class CheckHandler(JsonAPIHandler):
     def get_txs(self, addr):
@@ -280,25 +298,19 @@ class WidgetJSHandler(webapp2.RequestHandler):
         
 class ExternalRegisterHandler(DigestStoreHandler):
     
-    def do_pay(self, d, ladd, radd):
-        recipients = json.dumps({
-                             ladd : SATOSHI,
-                             radd: SATOSHI    
-                                 }, separators=(',',':'))
-        note_encode = urllib.urlencode({"note":"http://www.proofofexistence.com/detail/"+d})
-        data = (BLOCKCHAIN_GUID, BLOCKCHAIN_ACCESS_1, BLOCKCHAIN_ACCESS_2, recipients, BLOCKCHAIN_FEE, POE_PAYMENTS_ADDRESS, note_encode)
-        url = 'https://blockchain.info/merchant/%s/sendmany?password=%s&second_password=%s&recipients=%s&shared=false&fee=%d&from=%s&%s' % data
-        result = urlfetch.fetch(url)
-        if result.status_code == 200:
-            j = json.loads(result.content)
-            return (j["message"], j["tx_hash"])
-        else:
-            logging.error("Error accessing blockchain API: "+str(result.status_code))
-            return (None, None)
+    def get_pay_address(self, d):
+        account = CoinbaseAccount(api_key=COINBASE_API_KEY)
+        callback_url = "https://www.proofofexistence.com/api/api_callback?secret=%s&d=%s" % (SECRET, d)
+        return account.generate_receive_address(callback_url).get("address")
     
     def handle(self):
         digest = self.request.get("d") #expects client-side hashing
+        
         if not digest or len(digest) != 64:
+            return {"success" : False, "reason" : "format"}
+        try:
+            digest.decode("hex")
+        except TypeError:
             return {"success" : False, "reason" : "format"}
         
         ret = self.store_digest(digest)
@@ -306,16 +318,30 @@ class ExternalRegisterHandler(DigestStoreHandler):
             del ret["args"]
             return ret
         
+        pay_address = self.get_pay_address(digest)
+        if not pay_address:
+            return {"success" : False, "reason" : "cant generate pay address"}
         
-        
-        
+        ret["pay_address"] = pay_address
+        ret["price"] = MIN_SATOSHIS_PAYMENT 
         return ret
             
              
 
 class ExternalStatusHandler(JsonAPIHandler):
     def handle(self):
-        return {}
+        digest = self.request.get("d")
+        doc = DocumentProof.all().filter("digest = ", digest).get()
+        if not digest:
+            return {"success": False, "reason": "format"}
+        if not doc:
+            return {"success": False, "reason": "nonexistent"}
+        if doc.tx:
+            return {"success": True, "status": "confirmed"}
+        if doc.ladd and doc.radd:
+            return {"success": True, "status": "pending"}
+        
+        return {"success": True, "status": "registered"}
 
 app = webapp2.WSGIApplication([
     ('/api/register', RegisterHandler),
@@ -323,6 +349,7 @@ app = webapp2.WSGIApplication([
     ('/api/latest', LatestHandler),
     ('/api/detail', DetailHandler),
     ('/api/callback', PaymentCallback),
+    ('/api/api_callback', ApiPaymentCallback),
     ('/api/check', CheckHandler),
     ('/api/pending', PendingHandler),
     ('/api/autopay', AutopayHandler),
