@@ -87,7 +87,6 @@ class BootstrapHandler(JsonAPIHandler):
         result = urlfetch.fetch(url)
         if result.status_code == 200:
             j = json.loads(result.content)
-            print j
             return float(j["time"])
         else:
             logging.error("Error accessing blockchain API: "+str(result.status_code))
@@ -151,7 +150,6 @@ class BasePaymentCallback(JsonAPIHandler):
     def process_payment(self, satoshis, digest):
         secret = self.request.get("secret")
         if len(digest) != 64 or secret != SECRET or satoshis < MIN_SATOSHIS_PAYMENT:
-            print len(digest), secret != SECRET, satoshis, MIN_SATOSHIS_PAYMENT
             return {"success" : False, "reason" : "format or payment below " + str(MIN_SATOSHIS_PAYMENT)}
         
         doc = DocumentProof.all().filter("digest = ", digest).get()
@@ -181,11 +179,9 @@ class PaymentCallback(BasePaymentCallback):
 
 class ApiPaymentCallback(BasePaymentCallback):
     def handle(self):
-        print self.request.body
         j = json.loads(self.request.body)
         satoshis = int(j["amount"] * BTC_TO_SATOSHI)
         digest = self.request.get("d")
-        print digest, self.request.get("secret")
         return self.process_payment(satoshis, digest)
         
     
@@ -241,6 +237,16 @@ class AutopayHandler(JsonAPIHandler):
         else:
             logging.error("Error accessing blockchain API: "+str(result.status_code))
             return True
+        
+    def do_check(self, d):
+        url = "https://www.proofofexistence.com/api/check?d=%s" % (d)
+        result = urlfetch.fetch(url)
+        if result.status_code == 200:
+            j = json.loads(result.content)
+            return j["success"]
+        else:
+            logging.error("Error accessing our own API: "+str(result.status_code))
+            return None
 
     def do_pay(self, d, ladd, radd):
         recipients = json.dumps({
@@ -268,8 +274,7 @@ class AutopayHandler(JsonAPIHandler):
         if self.has_txs(doc.radd):
             return {"success" : False, "error": "radd"}
         message, tx = self.do_pay(doc.digest, doc.ladd, doc.radd)
-        doc.tx = tx
-        doc.put()
+        self.do_check(digest)
         return {"success" : True, "tx" : tx, "message" : message}
     
 class WidgetJSHandler(webapp2.RequestHandler):
