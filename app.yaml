@@ -9,34 +9,19 @@ default_expiration: "1h"
 handlers:
 - url: /stylesheets
   static_dir: stylesheets
-  secure: always
+  secure: optional
 
 - url: /images
   static_dir: images
-  secure: always
+  secure: optional
 
 - url: /js
   static_dir: js
-  secure: always
+  secure: optional
   
-- url: /
-  static_files: index.html
-  upload: index.html
-  secure: always
-  
-- url: /([^/]*)
-  static_files: \1.html
-  upload: (.*).html
-  secure: always
-
-- url: /detail/([^/]*)
-  static_files: detail.html
-  upload: detail.html
-  secure: always
-
 - url: .*
   script: main.app
-  secure: always
+  secure: optional
 
 
 libraries:

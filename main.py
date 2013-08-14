@@ -20,7 +20,6 @@ COINBASE_API_KEY = "INSERT HERE"
 
 
 
-
 BTC_TO_SATOSHI = 100000000
 BLOCKCHAIN_FEE = int(0.0001 * BTC_TO_SATOSHI) 
 LATEST_N = 5
@@ -42,6 +41,27 @@ def export_timestamp(timestamp):
     if not timestamp:
         return None
     return timestamp.strftime("%Y-%m-%d %H:%M:%S")
+
+
+
+
+
+class StaticHandler(webapp2.RequestHandler):
+    def get(self, _):
+        name = self.request.path.split("/")[1]
+        if name == "":
+            name = "index"
+            
+        values = {
+            "name": name
+        }
+        
+        try:
+            self.response.write(JINJA_ENVIRONMENT.get_template("templates/"+name+'.html').render(values))
+        except IOError, e:
+            self.error(404)
+            self.response.write("404: %s not found! %s" % (name, e))
+            
 
 class JsonAPIHandler(webapp2.RequestHandler):
     def post(self):
@@ -349,6 +369,7 @@ class ExternalStatusHandler(JsonAPIHandler):
         return {"success": True, "status": "registered"}
 
 app = webapp2.WSGIApplication([
+    ('/((?!api).)*', StaticHandler),
     ('/api/register', RegisterHandler),
     ('/api/upload', UploadHandler),
     ('/api/latest', LatestHandler),

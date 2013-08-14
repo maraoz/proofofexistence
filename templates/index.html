@@ -1,0 +1,77 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+{% include "templates/head.html" %}
+
+<title>Proof Of Existence</title>
+</head>
+
+<body>
+
+	{% include "templates/header.html" %}
+
+	<div class="container">
+		<div class="span12">.</div>
+		<div class="span12">.</div>
+
+		<div class="hero-unit">
+			<legend>
+				Select a document and have it certified by the Bitcoin
+				blockchain <small><a href="/about">What?</a></small>
+			</legend>
+			<form id="upload_form" method="POST"
+				enctype="multipart/form-data" action="api/upload">
+				<fieldset>
+					<input class="" id='file' type="file" name="d" />
+					<button id="upload_submit" style="display:none;" type="submit" class="btn btn-success">
+						<i class="icon-file"></i> Upload
+					</button>
+					<br /> <br />
+				</fieldset>
+			</form>
+			<div id="explain">Your document will <strong>not</strong> be uploaded. The cryptographic digest is calculated client-side.</div>
+			<div class="progress progress-striped">
+				<div class="bar"></div>
+			</div>
+
+			<div style="display: none;" class="slidingDiv alert">message</div>
+		</div>
+
+		<div class="row">
+			<div class="span10">
+				<h3>Last documents uploaded:</h3>
+				<table class="table" id="latest"></table>
+			</div>
+			<div class="span2" style="margin-top: 100px;">
+				If you find this useful please consider donating: <br /> <br />
+				<script>
+					var CoinWidget_Config = {
+						address : '17Ab2P14CJ7FMJF6ARVQ7oVrA3iA5RFP6G',
+						counter : 'amount',
+						text_label : 'Donate to this Bitcoin address:',
+						hide_qr : 'true'
+					};
+				</script>
+				<script src="/js/donate.js"></script>
+
+			</div>
+		</div>
+		<div class="row">
+			<div class="span10">
+				<h3>Last documents confirmed in the blockchain:</h3>
+				<table class="table" id="latest_confirmed"></table>
+			</div>
+		</div>
+
+
+		<div class="row"></div>
+		
+		{% include "templates/footer.html" %}
+		
+	</div>
+	<!-- /container -->
+	
+
+</body>
+</html>

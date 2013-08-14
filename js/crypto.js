@@ -3,6 +3,10 @@ CryptoJS v3.1.2
 code.google.com/p/crypto-js
 (c) 2009-2013 by Jeff Mott. All rights reserved.
 code.google.com/p/crypto-js/wiki/License
+
+Modifications for asynchronous callbacks on progress by maraoz
+(c) 2013 by Manuel Araoz.
+https://twitter.com/maraoz
 */
 var CryptoJS = CryptoJS || function (h, s) {
         var f = {}, t = f.lib = {}, g = function () {}, j = t.Base = {

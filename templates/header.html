@@ -1,0 +1,22 @@
+
+<div class="navbar navbar-inverse navbar-fixed-top">
+	<div class="navbar-inner">
+		<div class="container">
+			<button type="button" class="btn btn-navbar" data-toggle="collapse"
+				data-target=".nav-collapse">
+				<span class="icon-bar"></span> <span class="icon-bar"></span> <span
+					class="icon-bar"></span>
+			</button>
+			<a class="brand" href="/">Proof of Existence</a>
+			<div class="nav-collapse collapse">
+				<ul class="nav">
+					<li {% if name == "index" %}class="active"{% endif %}><a href="/">Upload</a></li>
+					<li {% if name == "about" %}class="active"{% endif %}><a href="/about">About</a></li>
+					<li {% if name == "developers" %}class="active"{% endif %}><a href="/developers">Developers</a></li>
+					<li {% if name == "contact" %}class="active"{% endif %}><a href="/contact">Contact</a></li>
+				</ul>
+			</div>
+			<!--/.nav-collapse -->
+		</div>
+	</div>
+</div>
