@@ -112,7 +112,7 @@ $(document).ready(function() {
 			bar.addClass('bar-success');
 			explain.html("Now hashing... Initializing");
 			setTimeout(function() {
-				CryptoJS.SHA256("Hi there n00bs"/*data*/,crypto_callback,crypto_finish);
+				CryptoJS.SHA256(data,crypto_callback,crypto_finish);
 			}, 200);
 			
 		};
