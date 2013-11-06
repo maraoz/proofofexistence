@@ -3,7 +3,7 @@
 import hashlib
 from b58 import encode as base58_encode, decode as base58_decode
 
-TESTNET = True
+TESTNET = False
 version = 0 if not TESTNET else 111
 
 def hide_in_address(x):
