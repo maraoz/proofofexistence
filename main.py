@@ -21,6 +21,9 @@ COINBASE_API_KEY = "INSERT HERE"
 
 
 
+
+
+
 BTC_TO_SATOSHI = 100000000
 BLOCKCHAIN_FEE = int(0.0001 * BTC_TO_SATOSHI) 
 LATEST_N = 5
@@ -67,6 +70,7 @@ class StaticHandler(webapp2.RequestHandler):
 class JsonAPIHandler(webapp2.RequestHandler):
     def post(self):
         self.get()
+        
     def get(self):
         resp = self.handle()
         self.response.headers['Content-Type'] = "application/json"
@@ -250,7 +254,7 @@ class PendingHandler(webapp2.RequestHandler):
              
 class AutopayHandler(JsonAPIHandler):
     def has_txs(self, addr):
-        url = "https://blockchain.info/address/%s?format=json&limit=1" % (addr)
+        url = "http://blockchain.info/address/%s?format=json&limit=1" % (addr)
         result = urlfetch.fetch(url)
         if result.status_code == 200:
             j = json.loads(result.content)
@@ -260,7 +264,7 @@ class AutopayHandler(JsonAPIHandler):
             return True
         
     def do_check(self, d):
-        url = "https://www.proofofexistence.com/api/check?d=%s" % (d)
+        url = "http://www.proofofexistence.com/api/check?d=%s" % (d)
         result = urlfetch.fetch(url)
         if result.status_code == 200:
             j = json.loads(result.content)
