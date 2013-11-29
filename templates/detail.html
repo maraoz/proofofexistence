@@ -1,90 +1,66 @@
-﻿<!DOCTYPE html>
-<html>
+{% extends "templates/base.html" %} {% block content %}
 
-<head>
+<h3 style="padding-top: 100px;">
+	Document information <small id="digest">Loading...</small>
+</h3>
+<div class="row" id="timestamp">Please wait</div>
 
-{% include "templates/head.html" %}
+<div class="row" style="padding-top: 10px;">
+	<div class="span3" id='icon'></div>
+	<div class='alert span8' style="height: 120px; display: none;"
+		id='blockchain_message'></div>
+</div>
 
-<title>Proof Of Existence</title>
-</head>
+<div class='hero-unit' id='certify_message' style="display: none;">
+	<h3>Want this document certified by a decentralized proof of
+		existence?</h3>
+	<p>We can embed the document's digest in the blockchain for you!</p>
+	<p>
+		You'll need to pay <strong>0.005 bitcoins</strong> to do so, as
+		required by our embedding algorithm, and you are also invited to tip
+		us with whatever value you find appropiate.
+	</p>
 
-<body>
+	<p>
+		<a id='coinbase-button' class="coinbase-button"
+			data-code="65128e9787b21267860984c1797623e7" data-custom="0000"
+			href="https://coinbase.com/checkouts/65128e9787b21267860984c1797623e7">
+			[Loading...] </a>
+	</p>
 
-	{% include "templates/header.html" %}
+</div>
+<div class='hero-unit' id='confirming_message' style="display: none;">
+	<p>
+		In case you are curious, we are waiting for a transaction to occur in
+		the Bitcoin network to the addresses <span id="ladd1">.</span> and <span
+			id="radd1">.</span>. This will embed the document's digest in the
+		blockchain permanently.
+	</p>
+</div>
+<div class='hero-unit' id='confirmed_message' style="display: none;">
+	<h3>Congratulations!</h3>
+	<p>This document's digest was successfully embedded in the Bitcoin
+		blockchain. It is now permanently certified and proven to exist since
+		the transaction was confirmed.</p>
+	<p id="tx"></p>
+	<p>If you want to confirm the document's existence manually, follow
+		this steps:
+	<ul>
+		<li>Calculate your document's SHA256 digest</li>
+		<li>Open the transaction link above.</li>
+		<li>The digest is embedded as the data payload of the two
+			addresses receiving money in that transaction.</li>
+		<li>The two addresses' Hash 160, when joined together, form the
+			document's digest. Check them at <span id="ladd2">.</span> and <span
+			id="radd2">.</span>.
+		</li>
+		<li>Alternatively you can check the Output Scripts of the
+			transaction, which perpetuate the digest in the Bitcoin blockchain.</li>
 
-
-	<div class="container">
-		<div class="span12">.</div>
-		<div class="span12">.</div>
-
-		<h3 style="padding-top: 100px;">
-			Document information <small id="digest">Loading...</small>
-		</h3>
-		<div class="row" id="timestamp">Please wait</div>
-
-		<div class="row" style="padding-top: 10px;">
-			<div class="span3" id='icon'></div>
-			<div class='alert span8' style="height: 120px; display: none;"
-				id='blockchain_message'></div>
-		</div>
-
-		<div class='hero-unit' id='certify_message' style="display: none;">
-			<h3>Want this document certified by a decentralized proof of
-				existence?</h3>
-			<p>We can embed the document's digest in the blockchain for you!</p>
-			<p>
-				You'll need to pay <strong>0.005 bitcoins</strong> to do so, as
-				required by our embedding algorithm, and you are also invited to tip
-				us with whatever value you find appropiate.
-			</p>
-
-			<p>
-				<a id='coinbase-button' class="coinbase-button"
-					data-code="65128e9787b21267860984c1797623e7" data-custom="0000"
-					href="https://coinbase.com/checkouts/65128e9787b21267860984c1797623e7">
-					[Loading...] </a>
-			</p>
-
-		</div>
-		<div class='hero-unit' id='confirming_message' style="display: none;">
-			<p>
-				In case you are curious, we are waiting for a transaction to occur
-				in the Bitcoin network to the addresses <span id="ladd1">.</span> and
-				<span id="radd1">.</span>. This will embed the document's digest in
-				the blockchain permanently.
-			</p>
-		</div>
-		<div class='hero-unit' id='confirmed_message' style="display: none;">
-			<h3>Congratulations!</h3>
-			<p>This document's digest was successfully embedded in the
-				Bitcoin blockchain. It is now permanently certified and proven to
-				exist since the transaction was confirmed.</p>
-			<p id="tx"></p>
-			<p>If you want to confirm the document's existence manually,
-				follow this steps:
-			<ul>
-				<li>Calculate your document's SHA256 digest</li>
-				<li>Open the transaction link above.</li>
-				<li>The digest is embedded as the data payload of the two
-					addresses receiving money in that transaction.</li>
-				<li>The two addresses' Hash 160, when joined together, form the
-					document's digest. Check them at <span id="ladd2">.</span> and <span
-					id="radd2">.</span>.
-				</li>
-				<li>Alternatively you can check the Output Scripts of the
-					transaction, which perpetuate the digest in the Bitcoin
-					blockchain.</li>
-
-			</ul>
-			</p>
-		</div>
-
-		{% include "templates/footer.html" %}
-	</div>
-	<!-- /container -->
+	</ul>
+	</p>
+</div>
 
 
+{% endblock %}
 
-
-</body>
-</html>

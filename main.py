@@ -12,16 +12,6 @@ from google.appengine.ext import db
 from model import DocumentProof, LatestConfirmedDocuments
 from coinbase import CoinbaseAccount
 
-SECRET = "INSERT HERE"
-BLOCKCHAIN_GUID = "INSERT HERE"
-BLOCKCHAIN_ACCESS_1 = "INSERT HERE"
-BLOCKCHAIN_ACCESS_2 = "INSERT HERE"
-COINBASE_API_KEY = "INSERT HERE"
-
-
-
-
-
 
 
 BTC_TO_SATOSHI = 100000000
@@ -80,21 +70,20 @@ class JsonAPIHandler(webapp2.RequestHandler):
 
 class DigestStoreHandler(JsonAPIHandler):
     def store_digest(self, digest):
-        docproof = DocumentProof.all().filter("digest = ", digest).get()
+        
+        docproof = DocumentProof.get(digest)
         if docproof:
             return {"success" : False, "reason": "existing", "digest": digest, "args": [export_timestamp(docproof.timestamp)]}
         
-        docproof = DocumentProof(digest=digest)
-        docproof.put()
-        
-        return {"success": True, "digest": digest}
+        d = DocumentProof.new(digest)
+        return {"success": True, "digest": d.digest}
  
 class UploadHandler(DigestStoreHandler):    
     def handle(self):
-        document = self.request.get("d")
-        if not document:
+        d = self.request.get("d") # full document
+        if not d:
             return {"success" : False, "reason" : "format"}
-        digest = hash_digest(document)
+        digest = hash_digest(d)
         
         return self.store_digest(digest)
 

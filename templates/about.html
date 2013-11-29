@@ -1,18 +1,4 @@
-<!DOCTYPE html>
-<html>
-
-<head>
-{% include "templates/head.html" %}
-<title>Proof Of Existence</title>
-</head>
-
-<body>
-
-	{% include "templates/header.html" %}
-
-	<div class="container">
-		<div class="span12">.</div>
-		<div class="span12">.</div>
+{% extends "templates/base.html" %} {% block content %}
 
 		<h1 style="padding-top: 100px;">What is proof of existence?</h1>
 
@@ -131,8 +117,5 @@
 			</ul>
 		</div>
 
-		{% include "templates/footer.html" %}
-	</div>
-	<!-- /container -->
-</body>
-</html>
+{% endblock %}
+

@@ -10,6 +10,16 @@ class DocumentProof(db.Model):
     
     timestamp = db.DateTimeProperty(auto_now_add=True)
     blockstamp = db.DateTimeProperty()
+    
+    @classmethod
+    def get(cls, digest):
+        return cls.all().filter("digest = ", digest).get()
+
+    @classmethod
+    def new(cls, digest):
+        d = cls(digest=digest)
+        d.put()
+        return d
 
 class LatestConfirmedDocuments(db.Model):
     """Helper table for latest confirmed documents retrieval"""

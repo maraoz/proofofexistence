@@ -1,124 +1,115 @@
-﻿<!DOCTYPE html>
-<html>
+{% extends "templates/base.html" %} {% block content %}
+<h1 style="padding-top: 100px;">Developer API</h1>
 
-<head>
-{% include "templates/head.html" %}
-<title>Proof Of Existence</title>
-</head>
-
-<body>
-
-	{% include "templates/header.html" %}
-
-	<div class="container">
-		<div class="span12">.</div>
-		<div class="span12">.</div>
-
-		<h1 style="padding-top: 100px;">Developer API</h1>
-
-		<p>This API allows developers to integrate their systems with
-			proofofexistence's functionality. You can access all of the app's
-			features through an HTTP interface.</p>
-		<p>It consists of the following two calls:
-		<ul>
-			<li><strong>http://www.proofofexistence.com/api/v1/register</strong>:
-				used to register a new document's <a href="#sha256">SHA256
-					digest</a>. Returns a payment address where you need to send the
-				bitcoins to have the document certified in the blockchain, and the
-				ammount of bitcoins you need to send expressed in satoshis
-				(100000000 satoshis = 1 BTC)</li>
-			<li><strong>http://www.proofofexistence.com/api/v1/status</strong>:
-				Receives a digest and returns <code>registered</code>, <code>pending</code> or <code>confirmed</code>
-				if the document was registered, was paid for and pending blockchain
-				insertion, or confirmed by the blockchain, respectively.</li>
-		</ul>
-		<p>Let's explain the API using an example:</p>
-		First we compute the SHA256 checksum hexdigest for a file we want
-		to certify on the blockchain:
-		<pre><code>shasum -a 256 somefile.txt
-15db6dbff597875ea13246e1c166802b690663c4e0635bfca78049d5a8762832  somefile.txt</code></pre>
+<p>This API allows developers to integrate their systems with
+	proofofexistence's functionality. You can access all of the app's
+	features through an HTTP interface.</p>
+<p>It consists of the following two calls:
+<ul>
+	<li><strong>http://www.proofofexistence.com/api/v1/register</strong>:
+		used to register a new document's <a href="#sha256">SHA256 digest</a>.
+		Returns a payment address where you need to send the bitcoins to have
+		the document certified in the blockchain, and the ammount of bitcoins
+		you need to send expressed in satoshis (100000000 satoshis = 1 BTC)</li>
+	<li><strong>http://www.proofofexistence.com/api/v1/status</strong>:
+		Receives a digest and returns <code>registered</code>, <code>pending</code>
+		or <code>confirmed</code> if the document was registered, was paid for
+		and pending blockchain insertion, or confirmed by the blockchain,
+		respectively.</li>
+</ul>
+<p>Let's explain the API using an example:</p>
+First we compute the SHA256 checksum hexdigest for a file we want to
+certify on the blockchain:
+<pre>
+	<code>shasum -a 256 somefile.txt
+15db6dbff597875ea13246e1c166802b690663c4e0635bfca78049d5a8762832  somefile.txt</code>
+</pre>
 
 
-		Checking the status for a digest which was never submitted will
-		give "success": false, as follows:
+Checking the status for a digest which was never submitted will give
+"success": false, as follows:
 
-		<pre><code>curl -k -d d=15db6dbff597875ea13246e1c166802b690663c4e0635bfca78049d5a8762832 http://www.proofofexistence.com/api/v1/status; echo
+<pre>
+	<code>curl -k -d d=15db6dbff597875ea13246e1c166802b690663c4e0635bfca78049d5a8762832 http://www.proofofexistence.com/api/v1/status; echo
 {
     "success": false,
     "reason": "nonexistent"
-}</code></pre>
+}</code>
+</pre>
 
 
 
 
-		So, first, we want to register the document's digest in
-		proofofexistence. This will return a bitcoin payment address, and the
-		minimum price (in satoshi, 0.00000001 BTC = 1 satoshi) to be paid to
-		that address in order to get the document proof inserted in the
-		blockchain.
-		<pre><code>curl -k -d d=15db6dbff597875ea13246e1c166802b690663c4e0635bfca78049d5a8762832 http://www.proofofexistence.com/api/v1/register; echo
+So, first, we want to register the document's digest in
+proofofexistence. This will return a bitcoin payment address, and the
+minimum price (in satoshi, 0.00000001 BTC = 1 satoshi) to be paid to
+that address in order to get the document proof inserted in the
+blockchain.
+<pre>
+	<code>curl -k -d d=15db6dbff597875ea13246e1c166802b690663c4e0635bfca78049d5a8762832 http://www.proofofexistence.com/api/v1/register; echo
 {
     "success": true,
     "digest": "15db6dbff597875ea13246e1c166802b690663c4e0635bfca78049d5a8762832",
     "pay_address": "1JP4ymzPo9rWmjzRazhRwJ4zYCJupqnTTJ",
     "price": 500000
-}</code></pre>
+}</code>
+</pre>
 
 
 
 
-		If we now check the document's digest status, we get it is
-		"registered". We want to get it from "registered" to "pending" after
-		that.
-		<pre><code>curl -k -d d=15db6dbff597875ea13246e1c166802b690663c4e0635bfca78049d5a8762832 http://www.proofofexistence.com/api/v1/status; echo
+If we now check the document's digest status, we get it is "registered".
+We want to get it from "registered" to "pending" after that.
+<pre>
+	<code>curl -k -d d=15db6dbff597875ea13246e1c166802b690663c4e0635bfca78049d5a8762832 http://www.proofofexistence.com/api/v1/status; echo
 {
     "success": true,
     "status": "registered"
-}</code></pre>
+}</code>
+</pre>
 
 
 
-		After making payment to indicated address
-		(1JP4ymzPo9rWmjzRazhRwJ4zYCJupqnTTJ) for a minimum value of 500000
-		satoshis:
+After making payment to indicated address
+(1JP4ymzPo9rWmjzRazhRwJ4zYCJupqnTTJ) for a minimum value of 500000
+satoshis:
 
-		<pre><code>curl -k -d d=15db6dbff597875ea13246e1c166802b690663c4e0635bfca78049d5a8762832 http://www.proofofexistence.com/api/v1/status; echo
+<pre>
+	<code>curl -k -d d=15db6dbff597875ea13246e1c166802b690663c4e0635bfca78049d5a8762832 http://www.proofofexistence.com/api/v1/status; echo
 {
     "success": true,,
     "status": "pending"
-}</code></pre>
+}</code>
+</pre>
 
 
-		This indicates the address received payment and you now have to wait
-		for us to create the transaction that stores the proof permanently in
-		the blockchain. After payment was processed and the certifying
-		transaction created, the status should change to "confirmed":
+This indicates the address received payment and you now have to wait for
+us to create the transaction that stores the proof permanently in the
+blockchain. After payment was processed and the certifying transaction
+created, the status should change to "confirmed":
 
-		<pre><code>curl -k -d d=15db6dbff597875ea13246e1c166802b690663c4e0635bfca78049d5a8762832 http://www.proofofexistence.com/api/v1/status; echo
+<pre>
+	<code>curl -k -d d=15db6dbff597875ea13246e1c166802b690663c4e0635bfca78049d5a8762832 http://www.proofofexistence.com/api/v1/status; echo
 {
     success": true
     "status": "confirmed"
-}</code></pre>
+}</code>
+</pre>
 
 
 
-		That's it! If you have any questions/feedback/problems, <a href="mailto:admin@proofofexistence.com">drop me an
-		email!</a>
-		
-		<a
-			id="sha256">
-		</a>
-		<h3> Calculating the SHA256 digest </h3>
-			<p>
-			
-			Here are ways in which you can calculate your document's
-			SHA256 digest. Of course you can also implement your own, these are
-			here for reference.
-			
-			<ul>
-				<li><strong>Using a client-side JS library</strong>: <a href="/js/crypto.js">crypto.js</a>.
-				Usage Example:
-				<pre><code>var data = "Hello world!";
+That's it! If you have any questions/feedback/problems,
+<a href="mailto:admin@proofofexistence.com">drop me an email!</a>
+
+<a id="sha256"> </a>
+<h3>Calculating the SHA256 digest</h3>
+<p>Here are ways in which you can calculate your document's SHA256
+	digest. Of course you can also implement your own, these are here for
+	reference.
+<ul>
+	<li><strong>Using a client-side JS library</strong>: <a
+		href="/js/crypto.js">crypto.js</a>. Usage Example: <pre>
+			<code>var data = "Hello world!";
 var progress = function(p) {
 	var w = (p*100);
 	alert(w + "% hashed");
@@ -127,20 +118,15 @@ var progress = function(p) {
 var crypto_finish = function(hash) {
 	alert("Document hash: "+hash);
 }
-CryptoJS.SHA256(data,progress,crypto_finish);</code></pre></li>
-				<li><strong>More to come</strong>: an API call for uploading the document and receiving the hash is in development.
-				</li>
-			</ul>
-			
-			</p>
+CryptoJS.SHA256(data,progress,crypto_finish);</code>
+		</pre></li>
+	<li><strong>More to come</strong>: an API call for uploading the
+		document and receiving the hash is in development.</li>
+</ul>
 
-		</p>
+</p>
 
-		{% include "templates/footer.html" %}
-	</div>
-	<!-- /container -->
+</p>
 
+{% endblock %}
 
-
-</body>
-</html>
