@@ -34,3 +34,4 @@ nosetests.xml
 .project
 .pydevproject
 /secrets.txt
+/secrets.py
