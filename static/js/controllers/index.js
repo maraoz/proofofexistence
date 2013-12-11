@@ -28,7 +28,7 @@ $(document).ready(function() {
 
 	// latest documents
 	var refreshLatest = function(confirmed, table) {
-		$.getJSON('api/latest?confirmed='+confirmed, function(data) {
+		$.getJSON('/api/document/latest?confirmed='+confirmed, function(data) {
 			var items = [];
 
 			items.push('<thead><tr><th></th><th>Document Digest</th><th>Timestamp</th></tr></thead>');
@@ -87,7 +87,7 @@ $(document).ready(function() {
 	var crypto_finish = function(hash) {
 		bar.width(100 + "%");
 		explain.html("Document hash: "+hash);
-		$.getJSON('api/register?d='+hash, onRegisterSuccess);
+		$.getJSON('/api/document/register?d='+hash, onRegisterSuccess);
 	}
 	
 	function handleFileSelect(evt) {

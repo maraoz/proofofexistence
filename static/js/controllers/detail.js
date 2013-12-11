@@ -57,7 +57,7 @@ $(document).ready(function() {
 				ladd1.html('<a href="https://blockchain.info/address/'+data.ladd+'">'+data.ladd+'</a>');
 				radd1.html('<a href="https://blockchain.info/address/'+data.radd+'">'+data.radd+'</a>');
 				confirming_message.show();
-				$.post('/api/check', postData, onCheckSuccess, "json");
+				$.post('/api/document/check', postData, onCheckSuccess, "json");
 			} else {
 				msg = 'Document proof not yet embedded in the bitcoin blockchain.';
 				clz = "alert-danger";
@@ -82,7 +82,7 @@ $(document).ready(function() {
 	};
 
 	var askDetails = function() {
-		$.post('/api/detail', postData, onSuccess, "json").fail(onFail);
+		$.post('/api/document/get', postData, onSuccess, "json").fail(onFail);
 	}
 
 	askDetails();

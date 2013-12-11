@@ -10,7 +10,8 @@ from google.appengine.api import urlfetch
 from model import DocumentProof, LatestConfirmedDocuments
 from coinbase import CoinbaseAccount
 from secrets import CALLBACK_SECRET, BLOCKCHAIN_WALLET_GUID, \
-    BLOCKCHAIN_PASSWORD_1, BLOCKCHAIN_PASSWORD_2, COINBASE_API_KEY
+    BLOCKCHAIN_PASSWORD_1, BLOCKCHAIN_PASSWORD_2, COINBASE_API_KEY,\
+    SECRET_ADMIN_PATH
 
 
 
@@ -75,7 +76,7 @@ class DigestStoreHandler(JsonAPIHandler):
         d = DocumentProof.new(digest)
         return {"success": True, "digest": d.digest}
 
-class UploadHandler(DigestStoreHandler):
+class DocumentUploadHandler(DigestStoreHandler):
     def handle(self):
         d = self.request.get("d")  # full document
         if not d:
@@ -84,7 +85,7 @@ class UploadHandler(DigestStoreHandler):
 
         return self.store_digest(digest)
 
-class RegisterHandler(DigestStoreHandler):
+class DocumentRegisterHandler(DigestStoreHandler):
     def handle(self):
         digest = self.request.get("d")  # expects client-side hashing
         if not digest or len(digest) != 64:
@@ -96,14 +97,14 @@ class BootstrapHandler(JsonAPIHandler):
     def handle(self):
         return {"success" : True}
 
-class LatestHandler(JsonAPIHandler):
+class LatestDocumentsHandler(JsonAPIHandler):
     def handle(self):
         confirmed = self.request.get("confirmed")
         confirmed = confirmed and confirmed == "true"
 
         return [doc.to_dict() for doc in DocumentProof.get_latest(confirmed)]
 
-class DetailHandler(JsonAPIHandler):
+class DocumentGetHandler(JsonAPIHandler):
     def handle(self):
         digest = self.request.get("d")
         doc = DocumentProof.get_doc(digest)
@@ -151,7 +152,7 @@ class ApiPaymentCallback(BasePaymentCallback):
 
 
 
-class CheckHandler(JsonAPIHandler):
+class DocumentCheckHandler(JsonAPIHandler):
     def get_txs(self, addr):
         url = "https://blockchain.info/address/%s?format=json&limit=5" % (addr)
         result = urlfetch.fetch(url)
@@ -242,30 +243,6 @@ class AutopayHandler(JsonAPIHandler):
         self.do_check(digest)
         return {"success" : True, "tx" : tx, "message" : message}
 
-class WidgetJSHandler(webapp2.RequestHandler):
-    def get_info(self):
-        url = "https://blockchain.info/address/%s?format=json" % (DONATION_ADDRESS)
-        result = urlfetch.fetch(url)
-        if result.status_code == 200:
-            j = json.loads(result.content)
-            return (j["n_tx"], j["total_received"] / float(BTC_TO_SATOSHI))
-        else:
-            logging.error("Error accessing blockchain API: " + str(result.status_code))
-            return (None, None)
-    def get(self):
-        self.response.headers['Content-Type'] = "text/javascript"
-        counter, amount = self.get_info()
-        self.response.write("""
-        setTimeout(function(){
-            CoinWidget.build({
-                'counter': %d,
-                'amount': %f,
-                'cache': 0
-            },1);
-        },300);
-        """ % (counter, amount))
-
-
 class ExternalRegisterHandler(DigestStoreHandler):
 
     def get_pay_address(self, d):
@@ -314,18 +291,24 @@ class ExternalStatusHandler(JsonAPIHandler):
         return {"success": True, "status": "registered"}
 
 app = webapp2.WSGIApplication([
+    # static files 
     ('/((?!api).)*', StaticHandler),
-    ('/api/register', RegisterHandler),
-    ('/api/upload', UploadHandler),
-    ('/api/latest', LatestHandler),
-    ('/api/detail', DetailHandler),
+    
+    # internal API
+    ('/api/document/register', DocumentRegisterHandler),
+    ('/api/document/upload', DocumentUploadHandler),
+    ('/api/document/latest', LatestDocumentsHandler),
+    ('/api/document/get', DocumentGetHandler),
+    ('/api/document/check', DocumentCheckHandler),
+    
+    # manual admin
+    (SECRET_ADMIN_PATH+'/pending', PendingHandler),
+    (SECRET_ADMIN_PATH+'/autopay', AutopayHandler),
+    (SECRET_ADMIN_PATH+'/bootstrap', BootstrapHandler),
+    
+    # callbacks
     ('/api/callback', PaymentCallback),
     ('/api/api_callback', ApiPaymentCallback),
-    ('/api/check', CheckHandler),
-    ('/api/pending', PendingHandler),
-    ('/api/autopay', AutopayHandler),
-    ('/api/widget.js', WidgetJSHandler),
-    ('/api/bootstrap', BootstrapHandler),
 
     # public API
     ('/api/v1/register', ExternalRegisterHandler),
