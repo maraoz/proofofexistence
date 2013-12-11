@@ -1,5 +1,5 @@
 {% extends "templates/base.html" %} {% block content %}
-<h1 style="padding-top: 100px;">Developer API</h1>
+<h1>Developer API</h1>
 
 <p>This API allows developers to integrate their systems with
 	proofofexistence's functionality. You can access all of the app's
@@ -109,7 +109,8 @@ That's it! If you have any questions/feedback/problems,
 <ul>
 	<li><strong>Using a client-side JS library</strong>: <a
 		href="/js/crypto.js">crypto.js</a>. Usage Example: <pre>
-			<code>var data = "Hello world!";
+<code>
+var data = "Hello world!";
 var progress = function(p) {
 	var w = (p*100);
 	alert(w + "% hashed");
@@ -120,13 +121,9 @@ var crypto_finish = function(hash) {
 }
 CryptoJS.SHA256(data,progress,crypto_finish);</code>
 		</pre></li>
-	<li><strong>More to come</strong>: an API call for uploading the
-		document and receiving the hash is in development.</li>
+
 </ul>
 
-</p>
-
-</p>
 
 {% endblock %}
 

@@ -4,29 +4,23 @@ runtime: python27
 api_version: 1
 threadsafe: yes
 
-default_expiration: "1h"
+
+default_expiration: "10m"
 
 handlers:
-- url: /stylesheets
-  static_dir: stylesheets
-  secure: optional
-
-- url: /images
-  static_dir: images
-  secure: optional
-
-- url: /js
-  static_dir: js
-  secure: optional
+- url: /static
+  static_dir: static
   
 - url: .*
   script: main.app
-  secure: optional
-
+  
 
 libraries:
 - name: webapp2
   version: "2.5.1"
 
 - name: jinja2
-  version: latest
+  version: "latest"
+
+- name: pycrypto
+  version: "2.3"

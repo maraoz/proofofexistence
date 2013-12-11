@@ -4,7 +4,6 @@
 import webapp2, jinja2, os, hashlib, logging, urllib
 import json as json
 import datetime
-from embed import hide_in_address
 
 from google.appengine.api import urlfetch
 
