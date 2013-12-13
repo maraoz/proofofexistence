@@ -8,15 +8,21 @@ import json
 import base64
 from Crypto.Cipher import AES
 from poster.encode import multipart_encode, MultipartParam
-
-from pycoin import encoding
+from pycoin.tx.script import tools
 from pycoin.convention import satoshi_to_btc
 from pycoin.services import blockchain_info
-from pycoin.tx import UnsignedTx, SecretExponentSolver
-from secrets import BLOCKCHAIN_WALLET_GUID, BLOCKCHAIN_PASSWORD_1, BLOCKCHAIN_PASSWORD_2, CALLBACK_SECRET
+from pycoin.encoding import wif_to_secret_exponent,\
+    bitcoin_address_to_hash160_sec
+from pycoin.tx import UnsignedTx, SecretExponentSolver, TxOut
+from secrets import BLOCKCHAIN_WALLET_GUID, BLOCKCHAIN_PASSWORD_1, BLOCKCHAIN_PASSWORD_2, CALLBACK_SECRET,\
+    BLOCKCHAIN_ENCRYPTED_WALLET, PAYMENT_PRIVATE_KEY, PAYMENT_ADDRESS
 from Crypto.Protocol.KDF import PBKDF2
 import io
 import binascii
+from pycoin.tx.Tx import Tx
+from pycoin.tx.TxIn import TxIn
+from pycoin.tx.UnsignedTx import UnsignedTxOut
+from pycoin.serialize import b2h
 
 TX_FEES = 10000
 B2S = 100000000
@@ -117,16 +123,31 @@ def get_block(height):
         logging.error('There was an error contacting the Blockchain.info API')
         return None
 
-def callback_secret_valid(secret):
-    return secret == CALLBACK_SECRET
-
-def get_encrypted_wallet():
-    url = BASE_BLOCKCHAIN_URL + "/wallet/%s?format=%s" % (BLOCKCHAIN_WALLET_GUID, "json")
-    logging.warn(url)
+def get_txs_for_addr(self, addr, limit=5):
+    url = BASE_BLOCKCHAIN_URL + "/address/%s?format=json&limit=%s" % (addr, limit)
     result = urlfetch.fetch(url)
     if result.status_code == 200:
         j = json.loads(result.content)
-        return j.get("payload")
+        return [(tx["hash"], tx["time"]) for tx in j["txs"]]
+    else:
+        logging.error("Error accessing blockchain API: " + str(result.status_code))
+        return None
+
+def has_txs(self, addr):
+    return len(get_txs_for_addr(addr, 1)) > 0
+
+
+def callback_secret_valid(secret):
+    return secret == CALLBACK_SECRET
+
+def get_encrypted_wallet(offline=True):
+    if offline:
+        return BLOCKCHAIN_ENCRYPTED_WALLET
+    url = BASE_BLOCKCHAIN_URL + "/wallet/%s?format=%s" % (BLOCKCHAIN_WALLET_GUID, "json")
+    result = urlfetch.fetch(url)
+    if result.status_code == 200:
+        j = json.loads(result.content)
+        return j
     else:
         logging.error("Blockchain Error getting wallet from url %s, got result \n%d %s" % (url, result.status_code, result.content))
         return None
@@ -172,48 +193,42 @@ def push_tx(raw_tx):
         logging.error("Blockchain Error pushing raw tx %s got result \n%d %s" % (raw_tx, result.status_code, result.content))
         return None
 
-def manual_send(_from, recipient_list, fee=TX_FEES):
+def construct_data_tx(data, _from):
     
-    encrypted = get_encrypted_wallet()
-    decrypted = decrypt_wallet(encrypted)
+    # inputs
+    coins_from = blockchain_info.coin_sources_for_address(_from)
+    unsigned_txs_out = [UnsignedTxOut(h, idx, tx_out.coin_value, tx_out.script) for h, idx, tx_out in coins_from]
+    total_value = sum(cs[-1].coin_value for cs in coins_from)
     
-    secret_exponent = None
-    for key_data in decrypted["keys"]:
-        pk = key_data["priv"]
-        addr = key_data["addr"]
-        if _from == addr:
-            secret_exponent = encoding.from_bytes_32(encoding.a2b_base58(pk))
-    
-    if not secret_exponent:
-        return "couldn't find private key for address %s" % _from 
-    
-    total_value = 0
-    coins_from = []
-    coins_sources = blockchain_info.coin_sources_for_address(_from)
-    coins_from.extend(coins_sources)
-    total_value += sum(cs[-1].coin_value for cs in coins_sources)
-  
-    coins_to = []
-    total_spent = 0
-    for addr, satoshis in recipient_list:
-        total_spent += satoshis
-        coins_to.append((satoshis, addr))
-    change = (total_value - total_spent) - fee
-    if change > 0:
-        coins_to.append((change, _from))
+    # outputs
+    change = total_value - TX_FEES
     if change < 0:
         return "don't have funds for transaction fees."
-    actual_tx_fee = total_value - total_spent
-    if actual_tx_fee < fee:
-        return "not enough source coins (%s BTC) for destination (%s BTC). Short %s BTC" % (satoshi_to_btc(total_value), satoshi_to_btc(total_spent), satoshi_to_btc(-actual_tx_fee))
-    if actual_tx_fee > fee:
-        return "transacion fee too high, aborting: %s BTC" % (satoshi_to_btc(actual_tx_fee))
+    script_text = "OP_RETURN %s" % data.encode("hex")
+    script_bin = tools.compile(script_text)
+    STANDARD_SCRIPT_OUT = "OP_DUP OP_HASH160 %s OP_EQUALVERIFY OP_CHECKSIG"
+    new_txs_out = [TxOut(0, script_bin)]
+    for coin_value, bitcoin_address in [(change, _from)]:
+        hash160 = bitcoin_address_to_hash160_sec(bitcoin_address, False)
+        script_text = STANDARD_SCRIPT_OUT % b2h(hash160)
+        script_bin = tools.compile(script_text)
+        new_txs_out.append(TxOut(coin_value, script_bin))
     
-    unsigned_tx = UnsignedTx.standard_tx(coins_from, coins_to)
+    version = 1
+    lock_time = 0
+    unsigned_tx = UnsignedTx(version, unsigned_txs_out, new_txs_out, lock_time)
+    return unsigned_tx
+
+def publish_data(data):
+    
+    secret_exponent = wif_to_secret_exponent(PAYMENT_PRIVATE_KEY)
+    _from = PAYMENT_ADDRESS
+    
+    unsigned_tx = construct_data_tx(data, _from)
     solver = SecretExponentSolver([secret_exponent])
     new_tx = unsigned_tx.sign(solver)
     s = io.BytesIO()
     new_tx.stream(s)
     tx_bytes = s.getvalue()
     tx_hex = binascii.hexlify(tx_bytes).decode("utf8")
-    return push_tx(tx_hex)
+    return (tx_hex)

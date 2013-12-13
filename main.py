@@ -7,11 +7,13 @@ import datetime
 
 from google.appengine.api import urlfetch
 
-from model import DocumentProof, LatestConfirmedDocuments
+from model import Document, LatestConfirmedDocuments
 from coinbase import CoinbaseAccount
 from secrets import CALLBACK_SECRET, BLOCKCHAIN_WALLET_GUID, \
     BLOCKCHAIN_PASSWORD_1, BLOCKCHAIN_PASSWORD_2, COINBASE_API_KEY,\
     SECRET_ADMIN_PATH
+from blockchain import get_txs_for_addr, has_txs, get_encrypted_wallet,\
+    decrypt_wallet, publish_data
 
 
 
@@ -69,11 +71,11 @@ class JsonAPIHandler(webapp2.RequestHandler):
 class DigestStoreHandler(JsonAPIHandler):
     def store_digest(self, digest):
 
-        docproof = DocumentProof.get_doc(digest)
+        docproof = Document.get_doc(digest)
         if docproof:
             return {"success" : False, "reason": "existing", "digest": digest, "args": [export_timestamp(docproof.timestamp)]}
 
-        d = DocumentProof.new(digest)
+        d = Document.new(digest)
         return {"success": True, "digest": d.digest}
 
 class DocumentUploadHandler(DigestStoreHandler):
@@ -95,19 +97,19 @@ class DocumentRegisterHandler(DigestStoreHandler):
 
 class BootstrapHandler(JsonAPIHandler):
     def handle(self):
-        return {"success" : True}
+        return {"success" : publish_data("Hello world, @maraoz was here!")}
 
 class LatestDocumentsHandler(JsonAPIHandler):
     def handle(self):
         confirmed = self.request.get("confirmed")
         confirmed = confirmed and confirmed == "true"
 
-        return [doc.to_dict() for doc in DocumentProof.get_latest(confirmed)]
+        return [doc.to_dict() for doc in Document.get_latest(confirmed)]
 
 class DocumentGetHandler(JsonAPIHandler):
     def handle(self):
         digest = self.request.get("d")
-        doc = DocumentProof.get_doc(digest)
+        doc = Document.get_doc(digest)
         if not doc:
             return {"success" : False}
         return {"success": True, "doc": doc.to_dict()}
@@ -118,22 +120,14 @@ class BasePaymentCallback(JsonAPIHandler):
         if len(digest) != 64 or secret != CALLBACK_SECRET or satoshis < MIN_SATOSHIS_PAYMENT:
             return {"success" : False, "reason" : "format or payment below " + str(MIN_SATOSHIS_PAYMENT)}
 
-        doc = DocumentProof.get_doc(digest)
+        doc = Document.get_doc(digest)
         if not doc:
             return {"success" : False, "reason" : "Couldnt find document"}
-
-        reduced = digest.decode('hex')  # 32 bytes
-        left = bytes(reduced[:20])
-        right = bytes(reduced[20:] + "\0"*8)
-
-        ladd = hide_in_address(left)
-        radd = hide_in_address(right)
-
-        doc.ladd = ladd
-        doc.radd = radd
+        #reduced = digest.decode('hex')  # 32 bytes
+        doc.pending = False
         doc.put()
 
-        return {"success" : True, "addrs" : [doc.ladd, doc.radd]}
+        return {"success" : True}
 
 class PaymentCallback(BasePaymentCallback):
     def handle(self):
@@ -153,24 +147,14 @@ class ApiPaymentCallback(BasePaymentCallback):
 
 
 class DocumentCheckHandler(JsonAPIHandler):
-    def get_txs(self, addr):
-        url = "https://blockchain.info/address/%s?format=json&limit=5" % (addr)
-        result = urlfetch.fetch(url)
-        if result.status_code == 200:
-            j = json.loads(result.content)
-            return [(tx["hash"], tx["time"]) for tx in j["txs"]]
-        else:
-            logging.error("Error accessing blockchain API: " + str(result.status_code))
-            return None
-
     def handle(self):
         digest = self.request.get("d")
-        doc = DocumentProof.get_doc(digest)
+        doc = Document.get_doc(digest)
         if not doc or not doc.ladd or not doc.radd or doc.tx:
             return {"success" : False, "error": "format"}
 
-        ltxs = self.get_txs(doc.ladd)
-        rtxs = self.get_txs(doc.radd)
+        ltxs = get_txs_for_addr(doc.ladd)
+        rtxs = get_txs_for_addr(doc.radd)
         if not ltxs or not rtxs:
             return {"success" : False, "error": "no transactions"}
         intersection = [tx for tx in ltxs if tx in rtxs]
@@ -189,21 +173,12 @@ class DocumentCheckHandler(JsonAPIHandler):
 
 class PendingHandler(webapp2.RequestHandler):
     def get(self):
-        pending = DocumentProof.pending()
+        pending = Document.get_pending()
+        url = SECRET_ADMIN_PATH+'/autopay'
         for d in pending:
-            self.response.write('<a href="/api/autopay?d=%s">%s</a><br /><br />' % (d.digest, d.digest))
+            self.response.write('<a href="%s?d=%s">%s</a><br /><br />' % (url, d.digest, d.digest))
 
 class AutopayHandler(JsonAPIHandler):
-    def has_txs(self, addr):
-        url = "http://blockchain.info/address/%s?format=json&limit=1" % (addr)
-        result = urlfetch.fetch(url)
-        if result.status_code == 200:
-            j = json.loads(result.content)
-            return len(j["txs"]) > 0
-        else:
-            logging.error("Error accessing blockchain API: " + str(result.status_code))
-            return True
-
     def do_check(self, d):
         url = "http://www.proofofexistence.com/api/check?d=%s" % (d)
         result = urlfetch.fetch(url)
@@ -232,12 +207,12 @@ class AutopayHandler(JsonAPIHandler):
 
     def handle(self):
         digest = self.request.get("d")
-        doc = DocumentProof.get_doc(digest)
+        doc = Document.get_doc(digest)
         if not doc or not doc.ladd or not doc.radd or doc.tx:
             return {"success" : False, "error": "format"}
-        if self.has_txs(doc.ladd):
+        if has_txs(doc.ladd):
             return {"success" : False, "error": "ladd"}
-        if self.has_txs(doc.radd):
+        if has_txs(doc.radd):
             return {"success" : False, "error": "radd"}
         message, tx = self.do_pay(doc.digest, doc.ladd, doc.radd)
         self.do_check(digest)
@@ -278,7 +253,7 @@ class ExternalRegisterHandler(DigestStoreHandler):
 class ExternalStatusHandler(JsonAPIHandler):
     def handle(self):
         digest = self.request.get("d")
-        doc = DocumentProof.get_doc(digest)
+        doc = Document.get_doc(digest)
         if not digest:
             return {"success": False, "reason": "format"}
         if not doc:
@@ -304,7 +279,7 @@ app = webapp2.WSGIApplication([
     # manual admin
     (SECRET_ADMIN_PATH+'/pending', PendingHandler),
     (SECRET_ADMIN_PATH+'/autopay', AutopayHandler),
-    (SECRET_ADMIN_PATH+'/bootstrap', BootstrapHandler),
+    ('/api/bootstrap', BootstrapHandler),
     
     # callbacks
     ('/api/callback', PaymentCallback),

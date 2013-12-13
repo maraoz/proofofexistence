@@ -3,9 +3,7 @@ from google.appengine.ext import db
 
 class LatestConfirmedDocuments(db.Model):
     """Helper table for latest confirmed documents retrieval"""
-
     digests = db.ListProperty(db.Key)
-
     @classmethod
     def get_inst(cls):
         inst = cls.all().get()
@@ -15,11 +13,10 @@ class LatestConfirmedDocuments(db.Model):
         return inst
 
 
-class DocumentProof(db.Model):
+class Document(db.Model):
     """Models a proof of document existence at a certain time"""
     digest = db.StringProperty()
-    ladd = db.StringProperty()
-    radd = db.StringProperty()
+    pending = db.BooleanProperty()
     tx = db.StringProperty()
 
     timestamp = db.DateTimeProperty(auto_now_add=True)
@@ -44,12 +41,12 @@ class DocumentProof(db.Model):
     def get_latest(cls, confirmed=False):
         if confirmed:
             bag = LatestConfirmedDocuments.get_inst()
-            return DocumentProof.get(bag.digests)
+            return cls.get(bag.digests)
         else:
-            return DocumentProof.all().order("-timestamp").run(limit=cls.LATEST_N)
+            return cls.all().order("-timestamp").run(limit=cls.LATEST_N)
 
     @classmethod
-    def pending(cls):
-        return cls.all().filter("ladd != ", None).filter("tx =", None).run()
+    def get_pending(cls):
+        return cls.all().filter("pending == ", True).run()
 
 
