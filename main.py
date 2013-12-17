@@ -13,7 +13,7 @@ from secrets import CALLBACK_SECRET, BLOCKCHAIN_WALLET_GUID, \
     BLOCKCHAIN_PASSWORD_1, BLOCKCHAIN_PASSWORD_2, COINBASE_API_KEY,\
     SECRET_ADMIN_PATH
 from blockchain import get_txs_for_addr, has_txs, get_encrypted_wallet,\
-    decrypt_wallet, publish_data
+    decrypt_wallet, publish_data, publish_data_old, do_check_document
 
 
 
@@ -97,7 +97,7 @@ class DocumentRegisterHandler(DigestStoreHandler):
 
 class BootstrapHandler(JsonAPIHandler):
     def handle(self):
-        return {"success" : publish_data("Hello world, @maraoz was here!")}
+        return {"success" : publish_data("Hello world, @maraoz was here!!!")}
 
 class LatestDocumentsHandler(JsonAPIHandler):
     def handle(self):
@@ -179,43 +179,14 @@ class PendingHandler(webapp2.RequestHandler):
             self.response.write('<a href="%s?d=%s">%s</a><br /><br />' % (url, d.digest, d.digest))
 
 class AutopayHandler(JsonAPIHandler):
-    def do_check(self, d):
-        url = "http://www.proofofexistence.com/api/check?d=%s" % (d)
-        result = urlfetch.fetch(url)
-        if result.status_code == 200:
-            j = json.loads(result.content)
-            return j["success"]
-        else:
-            logging.error("Error accessing our own API: " + str(result.status_code))
-            return None
-
-    def do_pay(self, d, ladd, radd):
-        recipients = json.dumps({
-                             ladd : SATOSHI,
-                             radd: SATOSHI
-                                 }, separators=(',', ':'))
-        note_encode = urllib.urlencode({"note":"http://www.proofofexistence.com/detail/" + d})
-        data = (BLOCKCHAIN_WALLET_GUID, BLOCKCHAIN_PASSWORD_1, BLOCKCHAIN_PASSWORD_2, recipients, BLOCKCHAIN_FEE, POE_PAYMENTS_ADDRESS, note_encode)
-        url = 'https://blockchain.info/merchant/%s/sendmany?password=%s&second_password=%s&recipients=%s&shared=false&fee=%d&from=%s&%s' % data
-        result = urlfetch.fetch(url)
-        if result.status_code == 200:
-            j = json.loads(result.content)
-            return (j["message"], j["tx_hash"])
-        else:
-            logging.error("Error accessing blockchain API: " + str(result.status_code))
-            return (None, None)
-
     def handle(self):
         digest = self.request.get("d")
         doc = Document.get_doc(digest)
-        if not doc or not doc.ladd or not doc.radd or doc.tx:
+        if not doc or not doc.tx:
             return {"success" : False, "error": "format"}
-        if has_txs(doc.ladd):
-            return {"success" : False, "error": "ladd"}
-        if has_txs(doc.radd):
-            return {"success" : False, "error": "radd"}
-        message, tx = self.do_pay(doc.digest, doc.ladd, doc.radd)
-        self.do_check(digest)
+        # TODO: add check to prevent double timestamping
+        tx, message = publish_data(doc.digest.decode("hex"))
+        do_check_document(digest)
         return {"success" : True, "tx" : tx, "message" : message}
 
 class ExternalRegisterHandler(DigestStoreHandler):

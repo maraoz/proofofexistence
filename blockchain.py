@@ -9,22 +9,20 @@ import base64
 from Crypto.Cipher import AES
 from poster.encode import multipart_encode, MultipartParam
 from pycoin.tx.script import tools
-from pycoin.convention import satoshi_to_btc
 from pycoin.services import blockchain_info
 from pycoin.encoding import wif_to_secret_exponent,\
-    bitcoin_address_to_hash160_sec
+    bitcoin_address_to_hash160_sec, hash160_sec_to_bitcoin_address
 from pycoin.tx import UnsignedTx, SecretExponentSolver, TxOut
 from secrets import BLOCKCHAIN_WALLET_GUID, BLOCKCHAIN_PASSWORD_1, BLOCKCHAIN_PASSWORD_2, CALLBACK_SECRET,\
     BLOCKCHAIN_ENCRYPTED_WALLET, PAYMENT_PRIVATE_KEY, PAYMENT_ADDRESS
 from Crypto.Protocol.KDF import PBKDF2
 import io
 import binascii
-from pycoin.tx.Tx import Tx
-from pycoin.tx.TxIn import TxIn
 from pycoin.tx.UnsignedTx import UnsignedTxOut
 from pycoin.serialize import b2h
 
 TX_FEES = 10000
+BLOCKCHAIN_DUST = 5430
 B2S = 100000000
 
 default_pbkdf2_iterations = 10
@@ -86,6 +84,18 @@ def payment(to, satoshis, _from=None):
         logging.error('There was an error contacting the Blockchain.info API')
         return None
 
+
+def do_check_document(self, d):
+    # FIXME: don't do this plz!!
+    url = "http://www.proofofexistence.com/api/check?d=%s" % (d)
+    result = urlfetch.fetch(url)
+    if result.status_code == 200:
+        j = json.loads(result.content)
+        return j["success"]
+    else:
+        logging.error("Error accessing our own API: " + str(result.status_code))
+        return None
+
 def sendmany(recipient_list, _from=None):
     url = get_base_blockchain_url("sendmany")
     # can't do it using python dict because we have repeated addresses
@@ -99,7 +109,8 @@ def sendmany(recipient_list, _from=None):
         url += "&from=%s" % (_from)
     result = urlfetch.fetch(url)
     if result.status_code == 200:
-        return json.loads(result.content).get("tx_hash")
+        j = json.loads(result.content)
+        return (j.get("tx_hash"), j.get("message"))
     else:
         logging.error('There was an error contacting the Blockchain.info API')
         return None
@@ -168,10 +179,8 @@ def decrypt_wallet(encrypted):
     return json.loads(content)
 
 def push_tx(raw_tx):
-    url = "https://blockchain.info/pushtx"
-    
+    url = BASE_BLOCKCHAIN_URL+"/pushtx"
     params = []
- 
     params.append(MultipartParam(
         "tx",
         filetype='text/plain',
@@ -194,41 +203,48 @@ def push_tx(raw_tx):
         return None
 
 def construct_data_tx(data, _from):
-    
     # inputs
     coins_from = blockchain_info.coin_sources_for_address(_from)
-    unsigned_txs_out = [UnsignedTxOut(h, idx, tx_out.coin_value, tx_out.script) for h, idx, tx_out in coins_from]
-    total_value = sum(cs[-1].coin_value for cs in coins_from)
+    min_coin_value, min_idx, min_h, min_script = min((tx_out.coin_value, idx, h, tx_out.script) for h, idx, tx_out in coins_from)
+    unsigned_txs_out = [UnsignedTxOut(min_h, min_idx, min_coin_value, min_script)]
     
     # outputs
-    change = total_value - TX_FEES
-    if change < 0:
-        return "don't have funds for transaction fees."
+    if min_coin_value > BLOCKCHAIN_DUST * 2:
+        return "Min output greater than twice the dust threshold, too big."
+    if min_coin_value < BLOCKCHAIN_DUST:
+        return "Min output smaller than dust threshold, too small."
     script_text = "OP_RETURN %s" % data.encode("hex")
     script_bin = tools.compile(script_text)
-    STANDARD_SCRIPT_OUT = "OP_DUP OP_HASH160 %s OP_EQUALVERIFY OP_CHECKSIG"
     new_txs_out = [TxOut(0, script_bin)]
-    for coin_value, bitcoin_address in [(change, _from)]:
-        hash160 = bitcoin_address_to_hash160_sec(bitcoin_address, False)
-        script_text = STANDARD_SCRIPT_OUT % b2h(hash160)
-        script_bin = tools.compile(script_text)
-        new_txs_out.append(TxOut(coin_value, script_bin))
-    
     version = 1
     lock_time = 0
     unsigned_tx = UnsignedTx(version, unsigned_txs_out, new_txs_out, lock_time)
     return unsigned_tx
 
-def publish_data(data):
+
+def tx2hex(tx):
+    s = io.BytesIO()
+    tx.stream(s)
+    tx_bytes = s.getvalue()
+    tx_hex = binascii.hexlify(tx_bytes).decode("utf8")
+    return tx_hex
+
+
+def publish_data_old(data):
+    lpart = data[:20]
+    rpart = data[20:] + ("\x00" * 8)
     
+    recipient_list = [(hash160_sec_to_bitcoin_address(part), 1) 
+                      for part in [lpart, rpart]]
+    return sendmany(recipient_list, PAYMENT_ADDRESS)
+
+def publish_data(data):
     secret_exponent = wif_to_secret_exponent(PAYMENT_PRIVATE_KEY)
     _from = PAYMENT_ADDRESS
     
     unsigned_tx = construct_data_tx(data, _from)
-    solver = SecretExponentSolver([secret_exponent])
-    new_tx = unsigned_tx.sign(solver)
-    s = io.BytesIO()
-    new_tx.stream(s)
-    tx_bytes = s.getvalue()
-    tx_hex = binascii.hexlify(tx_bytes).decode("utf8")
-    return (tx_hex)
+    if type(unsigned_tx) == str: # error
+        return (None, unsigned_tx)
+    signed_tx = unsigned_tx.sign(SecretExponentSolver([secret_exponent]))
+    tx_hex = tx2hex(signed_tx)
+    return (tx_hex, "some message")
