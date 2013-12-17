@@ -205,14 +205,14 @@ def push_tx(raw_tx):
 def construct_data_tx(data, _from):
     # inputs
     coins_from = blockchain_info.coin_sources_for_address(_from)
-    min_coin_value, min_idx, min_h, min_script = min((tx_out.coin_value, idx, h, tx_out.script) for h, idx, tx_out in coins_from)
+    min_coin_value, min_idx, min_h, min_script = max((tx_out.coin_value, idx, h, tx_out.script) for h, idx, tx_out in coins_from)
     unsigned_txs_out = [UnsignedTxOut(min_h, min_idx, min_coin_value, min_script)]
     
     # outputs
-    if min_coin_value > BLOCKCHAIN_DUST * 2:
-        return "Min output greater than twice the dust threshold, too big."
-    if min_coin_value < BLOCKCHAIN_DUST:
-        return "Min output smaller than dust threshold, too small."
+    if min_coin_value > TX_FEES * 2:
+        return "max output greater than twice the threshold, too big."
+    if min_coin_value < TX_FEES:
+        return "max output smaller than threshold, too small."
     script_text = "OP_RETURN %s" % data.encode("hex")
     script_bin = tools.compile(script_text)
     new_txs_out = [TxOut(0, script_bin)]
@@ -238,6 +238,19 @@ def publish_data_old(data):
                       for part in [lpart, rpart]]
     return sendmany(recipient_list, PAYMENT_ADDRESS)
 
+def pushtxn(hex_tx):
+    """Eligius pushtxn API"""
+    url = "http://eligius.st/~wizkid057/newstats/pushtxn.php"
+    result = urlfetch.fetch(url,
+                method=urlfetch.POST,
+                payload="transaction="+hex_tx
+                )
+    if result.status_code == 200:
+        return hex_tx, result.content
+    else:
+        logging.error("Error accessing eligius API")
+        return None
+    
 def publish_data(data):
     secret_exponent = wif_to_secret_exponent(PAYMENT_PRIVATE_KEY)
     _from = PAYMENT_ADDRESS
@@ -247,4 +260,4 @@ def publish_data(data):
         return (None, unsigned_tx)
     signed_tx = unsigned_tx.sign(SecretExponentSolver([secret_exponent]))
     tx_hex = tx2hex(signed_tx)
-    return (tx_hex, "some message")
+    return pushtxn(tx_hex)

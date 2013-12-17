@@ -97,7 +97,7 @@ class DocumentRegisterHandler(DigestStoreHandler):
 
 class BootstrapHandler(JsonAPIHandler):
     def handle(self):
-        return {"success" : publish_data("Hello world, @maraoz was here!!!")}
+        return {"success" : True}
 
 class LatestDocumentsHandler(JsonAPIHandler):
     def handle(self):
