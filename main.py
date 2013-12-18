@@ -9,11 +9,9 @@ from google.appengine.api import urlfetch
 
 from model import Document, LatestConfirmedDocuments
 from coinbase import CoinbaseAccount
-from secrets import CALLBACK_SECRET, BLOCKCHAIN_WALLET_GUID, \
-    BLOCKCHAIN_PASSWORD_1, BLOCKCHAIN_PASSWORD_2, COINBASE_API_KEY,\
+from secrets import CALLBACK_SECRET, COINBASE_API_KEY, \
     SECRET_ADMIN_PATH
-from blockchain import get_txs_for_addr, has_txs, get_encrypted_wallet,\
-    decrypt_wallet, publish_data, publish_data_old, do_check_document
+from blockchain import get_txs_for_addr, publish_data, do_check_document
 
 
 
@@ -41,20 +39,23 @@ def export_timestamp(timestamp):
 
 
 class StaticHandler(webapp2.RequestHandler):
-    def get(self, _):
-        name = self.request.path.split("/")[1]
+    
+    
+    def render_template(self, name):
         if name == "":
             name = "index"
 
         values = {
             "name": name
         }
-
+        self.response.write(JINJA_ENVIRONMENT.get_template("templates/" + name + '.html').render(values))
+    
+    def get(self, _):
+        name = self.request.path.split("/")[1]
         try:
-            self.response.write(JINJA_ENVIRONMENT.get_template("templates/" + name + '.html').render(values))
+            self.render_template(name)
         except IOError, e:
-            self.error(404)
-            self.response.write("404: %s not found! %s" % (name, e))
+            self.render_template("error")
 
 
 class JsonAPIHandler(webapp2.RequestHandler):
@@ -123,7 +124,7 @@ class BasePaymentCallback(JsonAPIHandler):
         doc = Document.get_doc(digest)
         if not doc:
             return {"success" : False, "reason" : "Couldnt find document"}
-        #reduced = digest.decode('hex')  # 32 bytes
+        # reduced = digest.decode('hex')  # 32 bytes
         doc.pending = False
         doc.put()
 
@@ -174,7 +175,7 @@ class DocumentCheckHandler(JsonAPIHandler):
 class PendingHandler(webapp2.RequestHandler):
     def get(self):
         pending = Document.get_pending()
-        url = SECRET_ADMIN_PATH+'/autopay'
+        url = SECRET_ADMIN_PATH + '/autopay'
         for d in pending:
             self.response.write('<a href="%s?d=%s">%s</a><br /><br />' % (url, d.digest, d.digest))
 
@@ -237,21 +238,21 @@ class ExternalStatusHandler(JsonAPIHandler):
         return {"success": True, "status": "registered"}
 
 app = webapp2.WSGIApplication([
-    # static files 
+    # static files
     ('/((?!api).)*', StaticHandler),
-    
+
     # internal API
     ('/api/document/register', DocumentRegisterHandler),
     ('/api/document/upload', DocumentUploadHandler),
     ('/api/document/latest', LatestDocumentsHandler),
     ('/api/document/get', DocumentGetHandler),
     ('/api/document/check', DocumentCheckHandler),
-    
+
     # manual admin
-    (SECRET_ADMIN_PATH+'/pending', PendingHandler),
-    (SECRET_ADMIN_PATH+'/autopay', AutopayHandler),
+    (SECRET_ADMIN_PATH + '/pending', PendingHandler),
+    (SECRET_ADMIN_PATH + '/autopay', AutopayHandler),
     ('/api/bootstrap', BootstrapHandler),
-    
+
     # callbacks
     ('/api/callback', PaymentCallback),
     ('/api/api_callback', ApiPaymentCallback),

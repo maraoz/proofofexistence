@@ -13,6 +13,7 @@ $(document).ready(function() {
 	var latest = $('#latest');
 	var latest_confirmed = $('#latest_confirmed');
 	var explain = $('#explain');
+	var dropbox = $('.dropbox');
 
 	// uncomment this to try non-HTML support:
 	//window.File = window.FileReader = window.FileList = window.Blob = null;
@@ -22,8 +23,22 @@ $(document).ready(function() {
 		explain.html("<strong>Important: </strong>Your browser does not support HTML5, so your document will need to be uploaded." +
 				" The cryptographic digest will be calculated on our servers but the document will be" +
 				" discarded immediately, without being stored, logged, or otherwise accessed. " +
-				"Please contact us if you have further questions.");
+				"Please contact us if you have any questions.");
 		upload_submit.show();
+		dropbox.hide();
+	} else {
+		dropbox.filedrop({
+		    callback : function(fileEncryptedData) {
+		    	handleFileSelect(fileEncryptedData)
+		    }
+		});
+		dropbox.click(function() {
+			$("#file").click();
+		});
+	    $('#file').change(function(){
+	        
+	    })
+		
 	}
 
 	// latest documents
@@ -90,21 +105,18 @@ $(document).ready(function() {
 		$.getJSON('/api/document/register?d='+hash, onRegisterSuccess);
 	}
 	
-	function handleFileSelect(evt) {
+	function handleFileSelect(f) {
 		if (!html5) {
 			return;
 		}
 		explain.html("Loading document...");
-	    var files = evt.target.files;
 	    var output = "";
-	    for (var i = 0, f; f = files[i]; i++) {
-	      output = '<strong>' + escape(f.name)
+	    output = '<strong>' + escape(f.name)
 			+ '</strong> (' + (f.type || 'n/a') + ') - '
 			+ f.size + ' bytes, last modified: '
 			+ (f.lastModifiedDate ? f.lastModifiedDate
-			.toLocaleDateString() : 'n/a' )+ '';
-	      break;
-	    }
+					.toLocaleDateString() : 'n/a' )+ '';
+	    
 	    var reader = new FileReader();
 		reader.onload = function(e) {
 			var data = e.target.result;
@@ -121,15 +133,17 @@ $(document).ready(function() {
 		    	var w = (((evt.loaded / evt.total)*100).toFixed(2));
 				bar.width( w+"%");
 		    }
-		  }
-        reader.readAsBinaryString(f);
+		}
+	    reader.readAsBinaryString(f);
 	    error.html('<ul>' + output + '</ul>');
 	    error.show();
-	  }
+	}
+	
+	document.getElementById('file').addEventListener('change', function(evt) {
+		var f = evt.target.files[0];
+		handleFileSelect(f);
+	}, false);
 
-	  document.getElementById('file').addEventListener('change', handleFileSelect, false);
-	
-	
 	// upload form (for non-html5 clients)
 	upload_submit.click(function(event) {
 		upload_form.ajaxForm({
@@ -150,7 +164,4 @@ $(document).ready(function() {
 		});
 
 	});
-
-
-
 });
