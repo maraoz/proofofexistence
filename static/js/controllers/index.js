@@ -124,7 +124,7 @@ $(document).ready(function() {
 		    }
 		}
 		reader.readAsBinaryString(f);
-		show_message(output);
+		show_message(output, "info");
 	}
 	
 	document.getElementById('file').addEventListener('change', function(evt) {
