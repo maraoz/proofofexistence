@@ -7,7 +7,6 @@ import logging
 import json
 import base64
 from Crypto.Cipher import AES
-from poster.encode import multipart_encode, MultipartParam
 from pycoin.tx.script import tools
 from pycoin.services import blockchain_info
 from pycoin.encoding import wif_to_secret_exponent,\
@@ -177,30 +176,6 @@ def decrypt_wallet(encrypted):
     cipher = AES.new(key, AES.MODE_CBC, iv)
     content = unpad(cipher.decrypt(enc[AES.block_size:]))
     return json.loads(content)
-
-def push_tx(raw_tx):
-    url = BASE_BLOCKCHAIN_URL+"/pushtx"
-    params = []
-    params.append(MultipartParam(
-        "tx",
-        filetype='text/plain',
-        value=raw_tx))
-        
-    payloadgen, headers = multipart_encode(params)
-            
-    payload = str().join(payloadgen)
-          
-    result = urlfetch.fetch(
-        url=url,
-        payload=payload,
-        method=urlfetch.POST,
-        headers=headers)
-    
-    if result.status_code == 200:
-        return result.content
-    else:
-        logging.error("Blockchain Error pushing raw tx %s got result \n%d %s" % (raw_tx, result.status_code, result.content))
-        return None
 
 def construct_data_tx(data, _from):
     # inputs
