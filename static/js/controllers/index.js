@@ -27,9 +27,7 @@ $(document).ready(function() {
 		dropbox.hide();
 	} else {
 		dropbox.filedrop({
-		    callback : function(fileEncryptedData) {
-		    	handleFileSelect(fileEncryptedData)
-		    }
+		    callback : handleFileSelect
 		});
 		dropbox.click(function() {
 			$("#file").click();
@@ -71,7 +69,7 @@ $(document).ready(function() {
 			show_message(vsprintf(message["added"], []), "success");
 		} else {
 			if (json.args) {
-				show_message(vsprintf(message[json.reason], json.args), "error");
+				show_message(vsprintf(message[json.reason], json.args), "success");
 			} else {
 				show_message(message[json.reason], "error");
 			}
@@ -125,6 +123,7 @@ $(document).ready(function() {
 				bar.width( w+"%");
 		    }
 		}
+		reader.readAsBinaryString(f);
 		show_message(output);
 	}
 	
