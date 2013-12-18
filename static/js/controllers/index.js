@@ -2,12 +2,11 @@ $(document).ready(function() {
 
 	var message = {
 		"format" : "Must select a file to upload",
-		"existing" : "File already exists in the system since %s. <strong>Redirecting...</strong>",
-		"added" : "File successfully added to system. <strong>Redirecting...</strong>"
+		"existing" : "File already exists in the system since %s. Redirecting...",
+		"added" : "File successfully added to system. Redirecting..."
 	}
 	
 	var bar = $('.bar');
-	var error = $(".slidingDiv");
 	var upload_submit = $("#upload_submit");
 	var upload_form = $('#upload_form');
 	var latest = $('#latest');
@@ -68,24 +67,16 @@ $(document).ready(function() {
 
 	// client-side hash
 	var onRegisterSuccess = function(json) {
-		e = error.clone();
 		if (json.success) {
-			bar.removeClass('bar-info');
-			bar.addClass('bar-success');
-			e.html(vsprintf(message["added"], []));
+			show_message(vsprintf(message["added"], []), "success");
 		} else {
-			bar.removeClass('bar-info');
 			if (json.args) {
-				bar.addClass('bar-warning');
-				e.html(vsprintf(message[json.reason], json.args));
+				show_message(vsprintf(message[json.reason], json.args), "error");
 			} else {
-				bar.addClass('bar-danger');
-				e.html(message[json.reason]);
+				show_message(message[json.reason], "error");
 			}
 			
 		}
-		error.after(e);
-		e.show();
 		if (json.digest) {
 			window.setTimeout(function() {
 				window.location.replace("/detail/"+json.digest);
@@ -111,8 +102,8 @@ $(document).ready(function() {
 		}
 		explain.html("Loading document...");
 	    var output = "";
-	    output = '<strong>' + escape(f.name)
-			+ '</strong> (' + (f.type || 'n/a') + ') - '
+	    output = '' + escape(f.name)
+			+ ' (' + (f.type || 'n/a') + ') - '
 			+ f.size + ' bytes, last modified: '
 			+ (f.lastModifiedDate ? f.lastModifiedDate
 					.toLocaleDateString() : 'n/a' )+ '';
@@ -134,9 +125,7 @@ $(document).ready(function() {
 				bar.width( w+"%");
 		    }
 		}
-	    reader.readAsBinaryString(f);
-	    error.html('<ul>' + output + '</ul>');
-	    error.show();
+		show_message(output);
 	}
 	
 	document.getElementById('file').addEventListener('change', function(evt) {

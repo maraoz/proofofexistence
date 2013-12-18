@@ -4,18 +4,21 @@
 <head>
 {% include "templates/head.html" %}
 
-<title>Proof Of Existence</title>
+<title>Proof of Existence</title>
 </head>
 
 <body>
 
 	{% include "templates/header.html" %}
 
-	<div class="container" style="padding-top:40px;">
+	<div class="container">
+		{% include "templates/message.html" %}
+	
 		{% block content %} {% endblock %}
-		
+
+
 		{% include "templates/footer.html" %}
-		
+
 	</div>
 
 </body>
