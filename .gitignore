@@ -33,5 +33,6 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
-/secrets.txt
 /secrets.py
+
+.settings/
