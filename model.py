@@ -1,7 +1,7 @@
 
 from google.appengine.ext import db
 from pycoin.encoding import hash160_sec_to_bitcoin_address
-from appengine._internal.django.utils.datetime_safe import datetime
+import datetime
 
 class LatestConfirmedDocuments(db.Model):
     """Helper table for latest confirmed documents retrieval"""
@@ -19,7 +19,12 @@ class LatestConfirmedDocuments(db.Model):
             inst.put()
         return inst
 
-
+class DocumentProof(db.Model):
+    digest = db.StringProperty()
+    tx = db.StringProperty()
+    timestamp = db.DateTimeProperty()
+    blockstamp = db.DateTimeProperty()
+    
 class Document(db.Model):
     """Models a proof of document existence at a certain time"""
     digest = db.StringProperty()
@@ -42,6 +47,7 @@ class Document(db.Model):
     def confirmed(self, tx_hash, tx_timestamp):
         self.tx = tx_hash
         self.blockstamp = datetime.datetime.fromtimestamp(tx_timestamp)
+        self.pending = False
         self.put()
 
     @classmethod

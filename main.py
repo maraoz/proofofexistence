@@ -7,7 +7,7 @@ import datetime
 
 from google.appengine.api import urlfetch
 
-from model import Document, LatestConfirmedDocuments
+from model import Document, LatestConfirmedDocuments, DocumentProof
 from coinbase import CoinbaseAccount
 from secrets import CALLBACK_SECRET, COINBASE_API_KEY, \
     SECRET_ADMIN_PATH
@@ -97,7 +97,20 @@ class DocumentRegisterHandler(DigestStoreHandler):
 
 class BootstrapHandler(JsonAPIHandler):
     def handle(self):
-        return {"success" : True}
+        n = 0
+        for old in DocumentProof.all():
+            doc = Document.get_doc(old.digest)
+            if not doc:
+                doc = Document.new(old.digest)
+                doc.pending = old.tx == None
+                doc.tx = old.tx
+                doc.timestamp = old.timestamp
+                doc.blockstamp = old.blockstamp
+                n += 1
+                if n == 10:
+                    break 
+                
+        return {"success" : True, "processed": n}
 
 class LatestDocumentsHandler(JsonAPIHandler):
     def handle(self):
