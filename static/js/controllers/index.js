@@ -100,7 +100,7 @@ $(document).ready(function() {
 		}
 		explain.html("Loading document...");
 	    var output = "";
-	    output = '' + escape(f.name)
+	    output = 'Preparing to hash ' + escape(f.name)
 			+ ' (' + (f.type || 'n/a') + ') - '
 			+ f.size + ' bytes, last modified: '
 			+ (f.lastModifiedDate ? f.lastModifiedDate

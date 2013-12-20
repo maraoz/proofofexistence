@@ -3,12 +3,12 @@ from google.appengine.ext import db
 from pycoin.encoding import hash160_sec_to_bitcoin_address
 import datetime
 
-class LatestConfirmedDocuments(db.Model):
+class LatestBlockchainDocuments(db.Model):
     """Helper table for latest confirmed documents retrieval"""
-    digests = db.ListProperty(db.Key)
+    digests = db.StringListProperty()
     
     def add_document(self, doc):
-        self.digests = [doc.key()] + self.digests[:-1]
+        self.digests = [doc.digest] + self.digests[:-1]
         self.put()
     
     @classmethod
@@ -64,8 +64,8 @@ class Document(db.Model):
     @classmethod
     def get_latest(cls, confirmed=False):
         if confirmed:
-            bag = LatestConfirmedDocuments.get_inst()
-            return cls.get(bag.digests)
+            bag = LatestBlockchainDocuments.get_inst()
+            return [cls.get_doc(digest) for digest in bag.digests]
         else:
             return cls.all().order("-timestamp").run(limit=cls.LATEST_N)
 

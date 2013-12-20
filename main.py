@@ -7,7 +7,7 @@ import datetime
 
 from google.appengine.api import urlfetch
 
-from model import Document, LatestConfirmedDocuments, DocumentProof
+from model import Document, DocumentProof, LatestBlockchainDocuments
 from coinbase import CoinbaseAccount
 from secrets import CALLBACK_SECRET, COINBASE_API_KEY, \
     SECRET_ADMIN_PATH
@@ -178,7 +178,7 @@ class DocumentCheckHandler(JsonAPIHandler):
         tx_hash, tx_timestamp = intersection[0]
         doc.confirmed(tx_hash, tx_timestamp)
 
-        LatestConfirmedDocuments.get_inst().add_document(doc)
+        LatestBlockchainDocuments.get_inst().add_document(doc)
         return {"success" : True, "tx" : doc.tx}
 
 class PendingHandler(webapp2.RequestHandler):
