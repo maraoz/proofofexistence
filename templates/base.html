@@ -14,7 +14,9 @@
 	<div class="container" style="padding-top:40px;">
 		{% include "templates/message.html" %}
 	
-		{% block content %} {% endblock %}
+		<div id="content">
+			{% block content %} {% endblock %}
+		</div>
 
 
 		{% include "templates/footer.html" %}
