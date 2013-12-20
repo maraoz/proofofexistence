@@ -1,5 +1,4 @@
 $(document).ready(function() {
-
 	var message = {
 		"format" : "Must select a file to upload",
 		"existing" : "File already exists in the system since %s. Redirecting...",
@@ -17,15 +16,16 @@ $(document).ready(function() {
 	// uncomment this to try non-HTML support:
 	//window.File = window.FileReader = window.FileList = window.Blob = null;
 	
-	var html5 = window.File && window.FileReader && window.FileList && window.Blob; 
+	var html5 = window.File && window.FileReader && window.FileList && window.Blob;
+	$("#wait").hide();
 	if (!html5) {
 		explain.html("<strong>Important: </strong>Your browser does not support HTML5, so your document will need to be uploaded." +
 				" The cryptographic digest will be calculated on our servers but the document will be" +
 				" discarded immediately, without being stored, logged, or otherwise accessed. " +
 				"Please contact us if you have any questions.");
-		upload_submit.show();
-		dropbox.hide();
+		upload_form.show();
 	} else {
+		dropbox.show();
 		dropbox.filedrop({
 		    callback : handleFileSelect
 		});

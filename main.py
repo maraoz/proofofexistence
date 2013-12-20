@@ -11,7 +11,8 @@ from model import Document, LatestConfirmedDocuments
 from coinbase import CoinbaseAccount
 from secrets import CALLBACK_SECRET, COINBASE_API_KEY, \
     SECRET_ADMIN_PATH
-from blockchain import get_txs_for_addr, publish_data, do_check_document
+from blockchain import get_txs_for_addr, publish_data, do_check_document,\
+    publish_data_old
 
 
 
@@ -124,7 +125,6 @@ class BasePaymentCallback(JsonAPIHandler):
         doc = Document.get_doc(digest)
         if not doc:
             return {"success" : False, "reason" : "Couldnt find document"}
-        # reduced = digest.decode('hex')  # 32 bytes
         doc.pending = False
         doc.put()
 
@@ -186,7 +186,7 @@ class AutopayHandler(JsonAPIHandler):
         if not doc or not doc.tx:
             return {"success" : False, "error": "format"}
         # TODO: add check to prevent double timestamping
-        tx, message = publish_data(doc.digest.decode("hex"))
+        tx, message = publish_data_old(doc.digest.decode("hex"))
         do_check_document(digest)
         return {"success" : True, "tx" : tx, "message" : message}
 
