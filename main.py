@@ -40,8 +40,6 @@ def export_timestamp(timestamp):
 
 
 class StaticHandler(webapp2.RequestHandler):
-    
-    
     def render_template(self, name):
         if name == "":
             name = "index"
@@ -124,7 +122,7 @@ class BasePaymentCallback(JsonAPIHandler):
 
         doc = Document.get_doc(digest)
         if not doc:
-            return {"success" : False, "reason" : "Couldnt find document"}
+            return {"success" : False, "reason" : "Couldn't find document"}
         doc.pending = False
         doc.put()
 
@@ -151,25 +149,23 @@ class DocumentCheckHandler(JsonAPIHandler):
     def handle(self):
         digest = self.request.get("d")
         doc = Document.get_doc(digest)
-        if not doc or not doc.ladd or not doc.radd or doc.tx:
+        if not doc or doc.tx:
             return {"success" : False, "error": "format"}
-
-        ltxs = get_txs_for_addr(doc.ladd)
-        rtxs = get_txs_for_addr(doc.radd)
+        
+        ladd, radd = doc.get_address_repr()
+        
+        ltxs = get_txs_for_addr(ladd)
+        rtxs = get_txs_for_addr(radd)
         if not ltxs or not rtxs:
             return {"success" : False, "error": "no transactions"}
         intersection = [tx for tx in ltxs if tx in rtxs]
         if len(intersection) == 0:
             return {"success" : False, "error": "no intersecting"}
 
-        doc.tx = intersection[0][0]
-        doc.blockstamp = datetime.datetime.fromtimestamp(intersection[0][1])
-        doc.put()
+        tx_hash, tx_timestamp = intersection[0]
+        doc.confirmed(tx_hash, tx_timestamp)
 
-        bag = LatestConfirmedDocuments.get_inst()
-        bag.digests = [doc.key()] + bag.digests[:-1]
-        bag.put()
-
+        LatestConfirmedDocuments.get_inst().add_document(doc)
         return {"success" : True, "tx" : doc.tx}
 
 class PendingHandler(webapp2.RequestHandler):
@@ -186,7 +182,7 @@ class AutopayHandler(JsonAPIHandler):
         if not doc or not doc.tx:
             return {"success" : False, "error": "format"}
         # TODO: add check to prevent double timestamping
-        tx, message = publish_data_old(doc.digest.decode("hex"))
+        tx, message = publish_data_old(doc)
         do_check_document(digest)
         return {"success" : True, "tx" : tx, "message" : message}
 
@@ -194,7 +190,7 @@ class ExternalRegisterHandler(DigestStoreHandler):
 
     def get_pay_address(self, d):
         account = CoinbaseAccount(api_key=COINBASE_API_KEY)
-        callback_url = "https://www.proofofexistence.com/api/api_callback?secret=%s&d=%s" % (CALLBACK_SECRET, d)
+        callback_url = "http://www.proofofexistence.com/api/api_callback?secret=%s&d=%s" % (CALLBACK_SECRET, d)
         return account.generate_receive_address(callback_url).get("address")
 
     def handle(self):

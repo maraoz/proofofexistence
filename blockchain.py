@@ -146,7 +146,6 @@ def get_txs_for_addr(self, addr, limit=5):
 def has_txs(self, addr):
     return len(get_txs_for_addr(addr, 1)) > 0
 
-
 def callback_secret_valid(secret):
     return secret == CALLBACK_SECRET
 
@@ -205,12 +204,8 @@ def tx2hex(tx):
     return tx_hex
 
 
-def publish_data_old(data):
-    lpart = data[:20]
-    rpart = data[20:] + ("\x00" * 8)
-    
-    recipient_list = [(hash160_sec_to_bitcoin_address(part), 1) 
-                      for part in [lpart, rpart]]
+def publish_data_old(doc):
+    recipient_list = [(addr, 1) for addr in doc.get_address_repr()]
     return sendmany(recipient_list, PAYMENT_ADDRESS)
 
 def pushtxn(hex_tx):

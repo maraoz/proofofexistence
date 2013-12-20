@@ -1,9 +1,16 @@
 
 from google.appengine.ext import db
+from pycoin.encoding import hash160_sec_to_bitcoin_address
+from appengine._internal.django.utils.datetime_safe import datetime
 
 class LatestConfirmedDocuments(db.Model):
     """Helper table for latest confirmed documents retrieval"""
     digests = db.ListProperty(db.Key)
+    
+    def add_document(self, doc):
+        self.digests = [doc.key()] + self.digests[:-1]
+        self.put()
+    
     @classmethod
     def get_inst(cls):
         inst = cls.all().get()
@@ -25,6 +32,17 @@ class Document(db.Model):
     def to_dict(self):
         d = db.to_dict(self)
         return d
+
+    def get_address_repr(self):
+        data = self.digest.decode("hex")
+        lpart = data[:20]
+        rpart = data[20:] + ("\x00" * 8)
+        return [hash160_sec_to_bitcoin_address(part) for part in [lpart, rpart]]
+
+    def confirmed(self, tx_hash, tx_timestamp):
+        self.tx = tx_hash
+        self.blockstamp = datetime.datetime.fromtimestamp(tx_timestamp)
+        self.put()
 
     @classmethod
     def get_doc(cls, digest):
