@@ -2,6 +2,8 @@
 
 
 import webapp2, jinja2, os, hashlib, logging, urllib
+from webapp2_extras import i18n
+from webapp2_extras.i18n import gettext
 import json as json
 import datetime
 
@@ -14,8 +16,6 @@ from secrets import CALLBACK_SECRET, COINBASE_API_KEY, \
 from blockchain import get_txs_for_addr, publish_data, do_check_document,\
     publish_data_old
 
-
-
 BTC_TO_SATOSHI = 100000000
 BLOCKCHAIN_FEE = int(0.0001 * BTC_TO_SATOSHI)
 
@@ -25,8 +25,8 @@ SATOSHI = 1
 MIN_SATOSHIS_PAYMENT = int(0.005 * BTC_TO_SATOSHI)
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
-    extensions=['jinja2.ext.autoescape'])
-
+    extensions=['jinja2.ext.autoescape','jinja2.ext.i18n'])
+JINJA_ENVIRONMENT.install_gettext_translations(i18n)
 
 def hash_digest(x):
     hasher = hashlib.new('SHA256')
@@ -50,6 +50,7 @@ class StaticHandler(webapp2.RequestHandler):
         self.response.write(JINJA_ENVIRONMENT.get_template("templates/" + name + '.html').render(values))
     
     def get(self, _):
+        i18n.get_i18n().set_locale('en_US')
         name = self.request.path.split("/")[1]
         try:
             self.render_template(name)
