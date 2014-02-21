@@ -10,6 +10,8 @@ We use PyBabel and GetText to translate most of the site text.
 
 * If you are adding a locale, run ```pybabel init -l YOUR_LOCALE -d ./locale -i ./locale/messages.pot``` and PyBabel will create a /locale/YOUR_LOCALE/LC\_MESSAGES directory with a messages.po file.
 
+* Also make sure your locale is in ```known_locales``` in main.py
+
 <h3>Editing the .po file</h3>
 
 When you don't know a phrase, leave it blank, and the English content will appear.
