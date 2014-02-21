@@ -37,7 +37,7 @@ messages["es"][disclaimer] = "";
 
 var translate = function(msg){
 	var myLang = $(".language").val();
-	return messages[myLang][message] || message;
+	return messages[myLang][msg] || msg;
 };
 
 var setLanguage = function(){
