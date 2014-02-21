@@ -1,63 +1,64 @@
 {% extends "templates/base.html" %} {% block content %}
 
-<h1>What is proof of existence?</h1>
+<h1>{%trans%}What is proof of existence?{%endtrans%}</h1>
 
 <p>
-	Use our service to anonymously and securely store an online distributed
-	proof of existence for any document. <strong>Your documents
+	{%trans%}Use our service to anonymously and securely store an online distributed
+	proof of existence for any document.{%endtrans%}
+	{%trans%}<strong>Your documents
 		are NOT stored in our database or in the Bitcoin blockchain</strong>, so you
-	don't have to worry about your data being accessed by others.
+	don't have to worry about your data being accessed by others.{%endtrans%}
 </p>
 <p>
-	All we store is a <a
+	{%trans%}All we store is a <a
 		href="https://en.wikipedia.org/wiki/Cryptographic_hash_function">cryptographic
 		digest</a> of the file, associated to the time in which you uploaded the
 	document. In this way, you can later certify that said data existed at
 	that time. This is the first online service allowing you to publicly
 	prove that you have certain information without revealing the data or
 	yourself, with a decentralized certification based on the <a
-		href="http://bitcoin.org/">Bitcoin network</a>.
+		href="http://bitcoin.org/">Bitcoin network</a>.{%endtrans%}
 </p>
 <p>
-	The key advantages are anonymity, privacy, and getting a decentralized
+	{%trans%}The key advantages are anonymity, privacy, and getting a decentralized
 	proof which can't be removed by third parties or governments. <strong>Your
 		document's existence is permanently validated by the blockchain even
 		if this site is compromised or down</strong>, so you don't depend or need to
 	trust any central authority. All previous timestamping solutions lack
-	this independence.
+	this independence.{%endtrans%}
 </p>
 
-<h3 style="padding-top: 40px;">Common uses</h3>
+<h3 style="padding-top: 40px;">{%trans%}Common uses{%endtrans%}</h3>
 <div class="row">
 	<div class="span4">
-		<i class="icon-lock"></i><strong> Demonstrating data
-			ownership without revealing actual data.</strong> <br /> You can publicly
+		<i class="icon-lock"></i><strong> {%trans%}Demonstrating data
+			ownership without revealing actual data.{%endtrans%}</strong> <br /> {%trans%}You can publicly
 		reveal the digest and if conflict arises you can prove you had the
 		data that generates the digest. Useful for copyrighted material,
-		patents, etc.
+		patents, etc.{%endtrans%}
 	</div>
 	<div class="span4">
-		<i class="icon-time"></i><strong> Document timestamping.</strong> <br />
-		You can prove certain data exists at a certain moment of time. As we
+		<i class="icon-time"></i><strong> {%trans%}Document timestamping.{%endtrans%}</strong> <br />
+		{%trans%}You can prove certain data exists at a certain moment of time. As we
 		use the <a href="https://blockchain.info/">Bitcoin blockchain</a> to
 		store the document proof, you can certify the existence of your
 		document without the need of a central authority. Use the computing
-		power of the whole Bitcoin network to certify your data.
+		power of the whole Bitcoin network to certify your data.{%endtrans%}
 	</div>
 	<div class="span4">
-		<i class="icon-search"></i><strong> Checking for document
-			integrity.</strong> <br /> If you store a proof for your document and later
+		<i class="icon-search"></i><strong> {%trans%}Checking for document
+			integrity.{%endtrans%}</strong> <br /> {%trans%}If you store a proof for your document and later
 		re-upload it, the system will only recognize it if it is completely
 		and fully the same document. The slightest change, and we'll recognize
 		it is different, giving you the security that certified data can't be
-		changed.
+		changed.{%endtrans%}
 	</div>
 </div>
 
-<h3 style="padding-top: 40px;">Technical foundations</h3>
+<h3 style="padding-top: 40px;">{%trans%}Technical foundations{%endtrans%}</h3>
 <div class="row">
 	<p>
-		The document is certified via embedding its <a
+		{%trans%}The document is certified via embedding its <a
 			href="https://en.wikipedia.org/wiki/SHA-2">SHA256</a> digest in the
 		Bitcoin blockchain. This is done by generating a valid bitcoin
 		transaction to two specially crafted addresses which encode/contain
@@ -68,10 +69,10 @@
 			address generation algorithm</a>. This is why the bitcoins sent in this
 		special transaction are unspendable, as the addresses are being
 		generated from the document's hash fragments instead of from a private
-		ECDSA key.
+		ECDSA key.{%endtrans%}
 	</p>
 
-	<p>After the addresses are generated and the transaction is
+	<p>{%trans%}After the addresses are generated and the transaction is
 		confirmed, the document is permanently certified and proven to exist
 		since the transaction was confirmed. If the document hadn't existed at
 		the time the transaction entered the blockchain, it would have been
@@ -82,32 +83,32 @@
 		to the Pre-image resistance of hash functions). This is why once the
 		bitcoin blockchain confirms the transaction generated for the
 		document, its existence is proven, with no trust in a central
-		authority required.</p>
+		authority required.{%endtrans%}</p>
 
-	<p>If anyone wants to manually confirm the document's existence at
-		the timestamped time, they should just follow this steps:
+	<p>{%trans%}If anyone wants to manually confirm the document's existence at
+		the timestamped time, they should just follow this steps:{%endtrans%}
 	<ul>
-		<li>Calculate the document's SHA256 digest.</li>
-		<li>Find a transaction in the bitcoin blockchain that sends money
-			to the document's addresses, obtained as described above.</li>
-		<li>Decode the base58-encoded addresses.</li>
-		<li>The digest is embedded replacing the public key's hash in the
+		<li>{%trans%}Calculate the document's SHA256 digest.{%endtrans%}</li>
+		<li>{%trans%}Find a transaction in the bitcoin blockchain that sends money
+			to the document's addresses, obtained as described above.{%endtrans%}</li>
+		<li>{%trans%}Decode the base58-encoded addresses.{%endtrans%}</li>
+		<li>{%trans%}The digest is embedded replacing the public key's hash in the
 			two addresses, followed by trailing zeroes (the digest takes 32
-			bytes, and each address can hold 20 bytes of data).</li>
-		<li>The transaction in the blockchain to those two addresses
-			proves that the document existed at that time.</li>
+			bytes, and each address can hold 20 bytes of data).{%endtrans%}</li>
+		<li>{%trans%}The transaction in the blockchain to those two addresses
+			proves that the document existed at that time.{%endtrans%}</li>
 
 	</ul>
 
 	</p>
 </div>
 
-<h3 style="padding-top: 40px;">Developed by</h3>
+<h3 style="padding-top: 40px;">{%trans%}Developed by{%endtrans%}</h3>
 Manuel Araoz -
 <a href="https://twitter.com/maraoz">@maraoz</a>
 .
 
-<h3 style="padding-top: 40px;">Press, media, and mentions</h3>
+<h3 style="padding-top: 40px;">{%trans%}Press, media, and mentions{%endtrans%}</h3>
 <div class="row">
 	<ul>
 		<li><a

@@ -1,4 +1,3 @@
-
 <div class="navbar navbar-inverse navbar-fixed-top">
 	<div class="navbar-inner">
 		<div class="container">
@@ -10,11 +9,15 @@
 			<a class="brand" href="/">Proof of Existence</a>
 			<div class="nav-collapse collapse">
 				<ul class="nav">
-					<li {% if name == "index" %}class="active"{% endif %}><a href="/">Certify</a></li>
-					<li {% if name == "about" %}class="active"{% endif %}><a href="/about">About</a></li>
+					<li {% if name == "index" %}class="active"{% endif %}><a href="/">{%trans%}Certify{%endtrans%}</a></li>
+					<li {% if name == "about" %}class="active"{% endif %}><a href="/about">{%trans%}About{%endtrans%}</a></li>
 					<li {% if name == "developers" %}class="active"{% endif %}><a href="/developers">API</a></li>
-					<li {% if name == "contact" %}class="active"{% endif %}><a href="/contact">Contact</a></li>
+					<li {% if name == "contact" %}class="active"{% endif %}><a href="/contact">{%trans%}Contact{%endtrans%}</a></li>
 				</ul>
+				<select class="pull-right language" onchange="setLanguage()">
+				  <option value="en_US" {% if preferred_locale == "en_US" %}selected{% endif %}>English</option>
+				  <option value="es" {% if preferred_locale == "es" %}selected{% endif %}>Español</option>
+				</select>
 			</div>
 			<!--/.nav-collapse -->
 		</div>

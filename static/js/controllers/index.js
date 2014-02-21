@@ -1,8 +1,9 @@
 $(document).ready(function() {
+
 	var message = {
-		"format" : "Must select a file to upload",
-		"existing" : "File already exists in the system since %s. Redirecting...",
-		"added" : "File successfully added to system. Redirecting..."
+		"format" : translate("Must select a file to upload"),
+		"existing" : translate("File already exists in the system since %s. Redirecting..."),
+		"added" : translate("File successfully added to system. Redirecting...")
 	}
 	
 	var bar = $('.bar');
@@ -19,10 +20,7 @@ $(document).ready(function() {
 	var html5 = window.File && window.FileReader && window.FileList && window.Blob;
 	$("#wait").hide();
 	if (!html5) {
-		explain.html("<strong>Important: </strong>Your browser does not support HTML5, so your document will need to be uploaded." +
-				" The cryptographic digest will be calculated on our servers but the document will be" +
-				" discarded immediately, without being stored, logged, or otherwise accessed. " +
-				"Please contact us if you have any questions.");
+		explain.html(translate(disclaimer));
 		upload_form.show();
 	} else {
 		dropbox.show();
@@ -43,7 +41,7 @@ $(document).ready(function() {
 		$.getJSON('/api/document/latest?confirmed='+confirmed, function(data) {
 			var items = [];
 
-			items.push('<thead><tr><th></th><th>Document Digest</th><th>Timestamp</th></tr></thead>');
+			items.push('<thead><tr><th></th><th>' + translate('Document Digest') + '</th><th>' + translate('Timestamp') + '</th></tr></thead>');
 			$.each(data, function(index, obj) {
 				badge = "";
 				if (obj.tx) {
@@ -85,7 +83,7 @@ $(document).ready(function() {
 	var crypto_callback = function(p) {
 		var w = ((p*100).toFixed(0));
 		bar.width( w+"%");
-		explain.html("Now hashing... "+(w)+"%");
+		explain.html(translate("Now hashing... ")+(w)+"%");
 	}
 	
 	var crypto_finish = function(hash) {
@@ -98,20 +96,20 @@ $(document).ready(function() {
 		if (!html5) {
 			return;
 		}
-		explain.html("Loading document...");
+		explain.html(translate("Loading document..."));
 	    var output = "";
-	    output = 'Preparing to hash ' + escape(f.name)
-			+ ' (' + (f.type || 'n/a') + ') - '
-			+ f.size + ' bytes, last modified: '
+	    output = translate('Preparing to hash ') + escape(f.name)
+			+ ' (' + (f.type || translate('n/a')) + ') - '
+			+ f.size + translate(' bytes, last modified: ')
 			+ (f.lastModifiedDate ? f.lastModifiedDate
-					.toLocaleDateString() : 'n/a' )+ '';
+					.toLocaleDateString() : translate('n/a') )+ '';
 	    
 	    var reader = new FileReader();
 		reader.onload = function(e) {
 			var data = e.target.result;
 			bar.width(0+"%");
 			bar.addClass('bar-success');
-			explain.html("Now hashing... Initializing");
+			explain.html(translate("Now hashing... ") + translate("Initializing"));
 			setTimeout(function() {
 				CryptoJS.SHA256(data,crypto_callback,crypto_finish);
 			}, 200);
