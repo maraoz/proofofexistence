@@ -1,33 +1,33 @@
 {% extends "templates/base.html" %} {% block content %}
-<h1>Developer API</h1>
+<h1>{%trans%}Developer API{%endtrans%}</h1>
 
-<p>This API allows developers to integrate their systems with
+<p>{%trans%}This API allows developers to integrate their systems with
 	proofofexistence's functionality. You can access all of the app's
-	features through an HTTP interface.</p>
-<p>It consists of the following two calls:
+	features through an HTTP interface.{%endtrans%}</p>
+<p>{%trans%}It consists of the following two calls:{%endtrans%}
 <ul>
 	<li><strong>http://www.proofofexistence.com/api/v1/register</strong>:
-		used to register a new document's <a href="#sha256">SHA256 digest</a>.
+		{%trans%}used to register a new document's <a href="#sha256">SHA256 digest</a>.
 		Returns a payment address where you need to send the bitcoins to have
 		the document certified in the blockchain, and the ammount of bitcoins
-		you need to send expressed in satoshis (100000000 satoshis = 1 BTC)</li>
+		you need to send expressed in satoshis (100000000 satoshis = 1 BTC){%endtrans%}</li>
 	<li><strong>http://www.proofofexistence.com/api/v1/status</strong>:
-		Receives a digest and returns <code>registered</code>, <code>pending</code>
+		{%trans%}Receives a digest and returns <code>registered</code>, <code>pending</code>
 		or <code>confirmed</code> if the document was registered, was paid for
 		and pending blockchain insertion, or confirmed by the blockchain,
-		respectively.</li>
+		respectively.{%endtrans%}</li>
 </ul>
-<p>Let's explain the API using an example:</p>
-First we compute the SHA256 checksum hexdigest for a file we want to
-certify on the blockchain:
+<p>{%trans%}Let's explain the API using an example:{%endtrans%}</p>
+{%trans%}First we compute the SHA256 checksum hexdigest for a file we want to
+certify on the blockchain:{%endtrans%}
 <pre>
 	<code>shasum -a 256 somefile.txt
 15db6dbff597875ea13246e1c166802b690663c4e0635bfca78049d5a8762832  somefile.txt</code>
 </pre>
 
 
-Checking the status for a digest which was never submitted will give
-"success": false, as follows:
+{%trans%}Checking the status for a digest which was never submitted will give
+"success": false, as follows:{%endtrans%}
 
 <pre>
 	<code>curl -k -d d=15db6dbff597875ea13246e1c166802b690663c4e0635bfca78049d5a8762832 http://www.proofofexistence.com/api/v1/status; echo
@@ -40,11 +40,11 @@ Checking the status for a digest which was never submitted will give
 
 
 
-So, first, we want to register the document's digest in
+{%trans%}So, first, we want to register the document's digest in
 proofofexistence. This will return a bitcoin payment address, and the
 minimum price (in satoshi, 0.00000001 BTC = 1 satoshi) to be paid to
 that address in order to get the document proof inserted in the
-blockchain.
+blockchain.{%endtrans%}
 <pre>
 	<code>curl -k -d d=15db6dbff597875ea13246e1c166802b690663c4e0635bfca78049d5a8762832 http://www.proofofexistence.com/api/v1/register; echo
 {
@@ -58,8 +58,8 @@ blockchain.
 
 
 
-If we now check the document's digest status, we get it is "registered".
-We want to get it from "registered" to "pending" after that.
+{%trans%}If we now check the document's digest status, we get it is "registered".
+We want to get it from "registered" to "pending" after that.{%endtrans%}
 <pre>
 	<code>curl -k -d d=15db6dbff597875ea13246e1c166802b690663c4e0635bfca78049d5a8762832 http://www.proofofexistence.com/api/v1/status; echo
 {
@@ -70,9 +70,9 @@ We want to get it from "registered" to "pending" after that.
 
 
 
-After making payment to indicated address
-(1JP4ymzPo9rWmjzRazhRwJ4zYCJupqnTTJ) for a minimum value of 500000
-satoshis:
+{%trans%}After making payment to indicated address{%endtrans%}
+(1JP4ymzPo9rWmjzRazhRwJ4zYCJupqnTTJ) {%trans%}for a minimum value of 500000
+satoshis:{%endtrans%}
 
 <pre>
 	<code>curl -k -d d=15db6dbff597875ea13246e1c166802b690663c4e0635bfca78049d5a8762832 http://www.proofofexistence.com/api/v1/status; echo
@@ -83,10 +83,10 @@ satoshis:
 </pre>
 
 
-This indicates the address received payment and you now have to wait for
+{%trans%}This indicates the address received payment and you now have to wait for
 us to create the transaction that stores the proof permanently in the
 blockchain. After payment was processed and the certifying transaction
-created, the status should change to "confirmed":
+created, the status should change to "confirmed":{%endtrans%}
 
 <pre>
 	<code>curl -k -d d=15db6dbff597875ea13246e1c166802b690663c4e0635bfca78049d5a8762832 http://www.proofofexistence.com/api/v1/status; echo
@@ -98,17 +98,17 @@ created, the status should change to "confirmed":
 
 
 
-That's it! If you have any questions/feedback/problems,
-<a href="mailto:admin@proofofexistence.com">drop me an email!</a>
+{%trans%}That's it! If you have any questions/feedback/problems,{%endtrans%}
+<a href="mailto:admin@proofofexistence.com">{%trans%}drop me an email!{%endtrans%}</a>
 
 <a id="sha256"> </a>
-<h3>Calculating the SHA256 digest</h3>
-<p>Here are ways in which you can calculate your document's SHA256
+<h3>{%trans%}Calculating the SHA256 digest{%endtrans%}</h3>
+<p>{%trans%}Here are ways in which you can calculate your document's SHA256
 	digest. Of course you can also implement your own, these are here for
-	reference.
+	reference.{%endtrans%}
 <ul>
-	<li><strong>Using a client-side JS library</strong>: <a
-		href="/js/crypto.js">crypto.js</a>. Usage Example: <pre>
+	<li><strong>{%trans%}Using a client-side JS library{%endtrans%}</strong>: <a
+		href="/js/crypto.js">crypto.js</a>. {%trans%}Usage Example:{%endtrans%} <pre>
 <code>
 var data = "Hello world!";
 var progress = function(p) {
