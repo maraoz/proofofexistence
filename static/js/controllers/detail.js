@@ -22,8 +22,8 @@ $(document).ready(function() {
 	};
 
 	var onFail = function() {
-		digest.html("Error!");
-		timestamp.html("We couldn't find that document");
+		digest.html(translate("Error!"));
+		timestamp.html(translate("We couldn't find that document"));
 	};
 	
 	var onSuccess = function(data) {
@@ -32,9 +32,9 @@ $(document).ready(function() {
 			confirming_message.hide();
 			blockchain_message.show();
 			digest.html(data.digest);
-			var times = "Registered in our servers since: <strong>"+data.timestamp+"</strong><br /><br />";
+			var times = translate("Registered in our servers since:") + " <strong>"+data.timestamp+"</strong><br /><br />";
 			if (data.blockstamp) {
-				times += "Registered in the bitcoin blockchain since: <strong>"+data.blockstamp+"</strong> (transaction timestamp)<br /><br />";
+				times += translate("Registered in the bitcoin blockchain since:") + " <strong>"+data.blockstamp+"</strong> (" + translate("transaction timestamp") + ")<br /><br />";
 			}
 			timestamp.html(times);
 			var msg = "";
@@ -43,15 +43,15 @@ $(document).ready(function() {
 			var has_addresses = data.ladd != null && data.radd != null;
 			var img_src = "";
 			if (in_blockchain) {
-				msg = 'Document proof embedded in the Bitcoin blockchain!';
+				msg = translate('Document proof embedded in the Bitcoin blockchain!');
 				clz = "alert-success";
 				img_src = "check.png";
-				tx.html('<a href="https://blockchain.info/tx/'+data.tx+'"> Transaction '+data.tx+'</a>');
+				tx.html('<a href="https://blockchain.info/tx/'+data.tx+'"> ' + translate('Transaction') + ' '+data.tx+'</a>');
 				ladd2.html('<a href="https://blockchain.info/address/'+data.ladd+'">'+data.ladd+'</a>');
 				radd2.html('<a href="https://blockchain.info/address/'+data.radd+'">'+data.radd+'</a>');
 				confirmed_message.show();
 			} else if (has_addresses) {
-				msg = 'Payment being processed. Please wait while the bitcoin transaction is confirmed by the network.';
+				msg = translate('Payment being processed. Please wait while the bitcoin transaction is confirmed by the network.');
 				clz = "alert-warn";
 				img_src = "wait.png";
 				ladd1.html('<a href="https://blockchain.info/address/'+data.ladd+'">'+data.ladd+'</a>');
@@ -59,7 +59,7 @@ $(document).ready(function() {
 				confirming_message.show();
 				$.post('/api/document/check', postData, onCheckSuccess, "json");
 			} else {
-				msg = 'Document proof not yet embedded in the bitcoin blockchain.';
+				msg = translate('Document proof not yet embedded in the bitcoin blockchain.');
 				clz = "alert-danger";
 				img_src = "warn.png";
 				coinbase_button.attr('data-custom', data.digest);
