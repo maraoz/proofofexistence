@@ -1,4 +1,4 @@
-# English (United States) translations for Proof of Existence.
+# Spanish translations for Proof of Existence.
 # Copyright (C) 2014
 # This file is distributed under the same license as the project.
 #
@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "POT-Creation-Date: 2014-02-20 21:30-0600\n"
-"PO-Revision-Date: 2014-02-20 21:33-0600\n"
+"PO-Revision-Date: 2014-02-20 21:35-0600\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
@@ -43,7 +43,7 @@ msgstr ""
 
 #: templates/about.html:3
 msgid "What is proof of existence?"
-msgstr ""
+msgstr "¿Qué es proof of existence?"
 
 #: templates/about.html:6
 msgid ""
@@ -88,7 +88,7 @@ msgstr ""
 
 #: templates/about.html:31
 msgid "Common uses"
-msgstr ""
+msgstr "Usos comunes"
 
 #: templates/about.html:34
 msgid ""
@@ -106,7 +106,7 @@ msgstr ""
 
 #: templates/about.html:41
 msgid "Document timestamping."
-msgstr ""
+msgstr "Timestamp de documentos."
 
 #: templates/about.html:42
 msgid ""
@@ -137,7 +137,7 @@ msgstr ""
 
 #: templates/about.html:58
 msgid "Technical foundations"
-msgstr ""
+msgstr "Fundamentos técnicos"
 
 #: templates/about.html:61
 msgid ""
@@ -218,11 +218,11 @@ msgstr ""
 
 #: templates/about.html:111
 msgid "Press, media, and mentions"
-msgstr ""
+msgstr "Medios y Mencionas"
 
 #: templates/contact.html:2
 msgid "Contact and feedback"
-msgstr ""
+msgstr "Contacto y feedback"
 
 #: templates/contact.html:5
 msgid "Please help us improve the site by providing feedback!"
@@ -269,7 +269,7 @@ msgstr ""
 
 #: templates/developers.html:20
 msgid "Let's explain the API using an example:"
-msgstr ""
+msgstr "Explicamos el API con un ejemplo:"
 
 #: templates/developers.html:21
 msgid ""
@@ -323,7 +323,7 @@ msgstr ""
 
 #: templates/developers.html:102
 msgid "drop me an email!"
-msgstr ""
+msgstr "enviar email!"
 
 #: templates/developers.html:105
 msgid "Calculating the SHA256 digest"
@@ -350,7 +350,7 @@ msgstr ""
 
 #: templates/header.html:12
 msgid "Certify"
-msgstr ""
+msgstr "Certificar"
 
 #: templates/header.html:13
 msgid "About"
@@ -358,7 +358,7 @@ msgstr ""
 
 #: templates/header.html:15
 msgid "Contact"
-msgstr ""
+msgstr "Contacto"
 
 #: templates/index.html:5
 msgid "Select a document and have it certified in the Bitcoin blockchain"
@@ -366,7 +366,7 @@ msgstr ""
 
 #: templates/index.html:6
 msgid "What?"
-msgstr ""
+msgstr "¿Qué?"
 
 #: templates/index.html:17
 msgid "Loading..."
@@ -374,7 +374,7 @@ msgstr ""
 
 #: templates/index.html:26
 msgid "Upload"
-msgstr ""
+msgstr "Subir"
 
 #: templates/index.html:33
 msgid "Click or drag and drop your document here."
@@ -388,7 +388,7 @@ msgstr ""
 
 #: templates/index.html:46
 msgid "Last documents registered:"
-msgstr ""
+msgstr "Últimos documentos"
 
 #: templates/index.html:55
 msgid "Last documents confirmed in the blockchain:"
