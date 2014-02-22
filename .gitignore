@@ -35,3 +35,5 @@ nosetests.xml
 .pydevproject
 /secrets.txt
 /secrets.py
+
+*.swp

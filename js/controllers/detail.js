@@ -28,6 +28,7 @@ $(document).ready(function() {
 	
 	var onSuccess = function(data) {
 		if (data.success == true) {
+      data = data.doc;
 			confirming_message.hide();
 			blockchain_message.show();
 			digest.html(data.digest);

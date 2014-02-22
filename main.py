@@ -4,6 +4,7 @@
 import webapp2, jinja2, os, hashlib, logging, urllib
 import json as json
 import datetime
+import time
 from embed import hide_in_address
 
 from google.appengine.api import urlfetch
@@ -21,6 +22,7 @@ BLOCKCHAIN_FEE = int(0.0001 * BTC_TO_SATOSHI)
 DONATION_ADDRESS = "17Ab2P14CJ7FMJF6ARVQ7oVrA3iA5RFP6G"
 POE_PAYMENTS_ADDRESS = "11xP3sjdQy4QgP47RNHLH6DnKXWWVfb6B"
 SATOSHI = 1
+DUST_THRESHOLD = 5432
 MIN_SATOSHIS_PAYMENT = int(0.005 * BTC_TO_SATOSHI)
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
@@ -216,8 +218,8 @@ class AutopayHandler(JsonAPIHandler):
 
     def do_pay(self, d, ladd, radd):
         recipients = json.dumps({
-                             ladd : SATOSHI,
-                             radd: SATOSHI
+                             ladd : SATOSHI * DUST_THRESHOLD,
+                             radd: SATOSHI * DUST_THRESHOLD
                                  }, separators=(',', ':'))
         note_encode = urllib.urlencode({"note":"http://www.proofofexistence.com/detail/" + d})
         data = (BLOCKCHAIN_WALLET_GUID, BLOCKCHAIN_PASSWORD_1, BLOCKCHAIN_PASSWORD_2, recipients, BLOCKCHAIN_FEE, POE_PAYMENTS_ADDRESS, note_encode)
@@ -225,6 +227,8 @@ class AutopayHandler(JsonAPIHandler):
         result = urlfetch.fetch(url)
         if result.status_code == 200:
             j = json.loads(result.content)
+            if not j.get("message"):
+              logging.error("MESSAGE NOT THERE: "+str(result.content))
             return (j["message"], j["tx_hash"])
         else:
             logging.error("Error accessing blockchain API: " + str(result.status_code))
@@ -245,7 +249,7 @@ class AutopayHandler(JsonAPIHandler):
 
 class WidgetJSHandler(webapp2.RequestHandler):
     def get_info(self):
-        url = "https://blockchain.info/address/%s?format=json" % (DONATION_ADDRESS)
+        url = "http://blockchain.info/address/%s?format=json" % (DONATION_ADDRESS)
         result = urlfetch.fetch(url)
         if result.status_code == 200:
             j = json.loads(result.content)
