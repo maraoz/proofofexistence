@@ -20,7 +20,8 @@ BTC_TO_SATOSHI = 100000000
 BLOCKCHAIN_FEE = int(0.0001 * BTC_TO_SATOSHI)
 
 DONATION_ADDRESS = "17Ab2P14CJ7FMJF6ARVQ7oVrA3iA5RFP6G"
-POE_PAYMENTS_ADDRESS = "11xP3sjdQy4QgP47RNHLH6DnKXWWVfb6B"
+#POE_PAYMENTS_ADDRESS = "11xP3sjdQy4QgP47RNHLH6DnKXWWVfb6B"
+POE_PAYMENTS_ADDRESS = "1PM1atmt7c2Rir1RwZSPuE91M85FfZNo97"
 SATOSHI = 1
 DUST_THRESHOLD = 5432
 MIN_SATOSHIS_PAYMENT = int(0.005 * BTC_TO_SATOSHI)
@@ -239,10 +240,10 @@ class AutopayHandler(JsonAPIHandler):
         doc = DocumentProof.get_doc(digest)
         if not doc or not doc.ladd or not doc.radd or doc.tx:
             return {"success" : False, "error": "format"}
-        if self.has_txs(doc.ladd):
-            return {"success" : False, "error": "ladd"}
-        if self.has_txs(doc.radd):
-            return {"success" : False, "error": "radd"}
+        #if self.has_txs(doc.ladd):
+        #    return {"success" : False, "error": "ladd"}
+        #if self.has_txs(doc.radd):
+        #    return {"success" : False, "error": "radd"}
         message, tx = self.do_pay(doc.digest, doc.ladd, doc.radd)
         self.do_check(digest)
         return {"success" : True, "tx" : tx, "message" : message}
