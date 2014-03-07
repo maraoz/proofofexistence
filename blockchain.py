@@ -10,10 +10,10 @@ from Crypto.Cipher import AES
 from pycoin.tx.script import tools
 from pycoin.services import blockchain_info
 from pycoin.encoding import wif_to_secret_exponent,\
-    bitcoin_address_to_hash160_sec, hash160_sec_to_bitcoin_address
+  bitcoin_address_to_hash160_sec, hash160_sec_to_bitcoin_address
 from pycoin.tx import UnsignedTx, SecretExponentSolver, TxOut
 from secrets import BLOCKCHAIN_WALLET_GUID, BLOCKCHAIN_PASSWORD_1, BLOCKCHAIN_PASSWORD_2, CALLBACK_SECRET,\
-    BLOCKCHAIN_ENCRYPTED_WALLET, PAYMENT_PRIVATE_KEY, PAYMENT_ADDRESS
+  BLOCKCHAIN_ENCRYPTED_WALLET, PAYMENT_PRIVATE_KEY, PAYMENT_ADDRESS
 from Crypto.Protocol.KDF import PBKDF2
 import io
 import binascii
@@ -28,206 +28,207 @@ default_pbkdf2_iterations = 10
 
 # debugging
 class Mock():
-    status_code = 500
+  status_code = 500
 def mock(url):
-    print url
-    return Mock()
+  print url
+  return Mock()
 
 # uncomment to debug
 # urlfetch.fetch = mock
 
 def btc2satoshi(x):
-    return int(x * B2S)
+  return int(x * B2S)
 
 def satoshi2btc(x):
-    return x / float(B2S)
+  return x / float(B2S)
 
 
 BASE_BLOCKCHAIN_URL = "https://blockchain.info"
 
 def get_base_blockchain_url(command):
-    url = BASE_BLOCKCHAIN_URL
-    url += "/merchant/%s/%s?password=%s" % (BLOCKCHAIN_WALLET_GUID, command, BLOCKCHAIN_PASSWORD_1)
-    if len(BLOCKCHAIN_PASSWORD_2) > 0:
-        url += "&second_password=%s" % (BLOCKCHAIN_PASSWORD_2)
-    return url
+  url = BASE_BLOCKCHAIN_URL
+  url += "/merchant/%s/%s?password=%s" % (BLOCKCHAIN_WALLET_GUID, command, BLOCKCHAIN_PASSWORD_1)
+  if len(BLOCKCHAIN_PASSWORD_2) > 0:
+    url += "&second_password=%s" % (BLOCKCHAIN_PASSWORD_2)
+  return url
 
 def new_address():
-    url = get_base_blockchain_url("new_address")
-    result = urlfetch.fetch(url)
-    if result.status_code == 200:
-        j = json.loads(result.content)
-        return j["address"]
-    else:
-        logging.error('There was an error contacting the Blockchain.info API')
-        return None
+  url = get_base_blockchain_url("new_address")
+  result = urlfetch.fetch(url)
+  if result.status_code == 200:
+    j = json.loads(result.content)
+    return j["address"]
+  else:
+    logging.error('There was an error contacting the Blockchain.info API')
+    return None
 
 def address_balance(addr):
-    url = BASE_BLOCKCHAIN_URL + "/address/%s?format=json&limit=0" % addr
-    result = urlfetch.fetch(url)
-    if result.status_code == 200:
-        return json.loads(result.content)["final_balance"]
-    else:
-        logging.error('There was an error contacting the Blockchain.info API')
-        return None
+  url = BASE_BLOCKCHAIN_URL + "/address/%s?format=json&limit=0" % addr
+  result = urlfetch.fetch(url)
+  if result.status_code == 200:
+    return json.loads(result.content)["final_balance"]
+  else:
+    logging.error('There was an error contacting the Blockchain.info API')
+    return None
 
 def payment(to, satoshis, _from=None):
-    url = get_base_blockchain_url("payment")
-    url += "&to=%s&amount=%s&shared=%s&fee=%s" % (to, int(satoshis), "false", TX_FEES)
-    if _from:
-        url += "&from=%s" % (_from)
-    result = urlfetch.fetch(url)
-    if result.status_code == 200:
-        return json.loads(result.content).get("tx_hash")
-    else:
-        logging.error('There was an error contacting the Blockchain.info API')
-        return None
+  url = get_base_blockchain_url("payment")
+  url += "&to=%s&amount=%s&shared=%s&fee=%s" % (to, int(satoshis), "false", TX_FEES)
+  if _from:
+    url += "&from=%s" % (_from)
+  result = urlfetch.fetch(url)
+  if result.status_code == 200:
+    return json.loads(result.content).get("tx_hash")
+  else:
+    logging.error('There was an error contacting the Blockchain.info API')
+    return None
 
 
 def do_check_document(self, d):
-    # FIXME: don't do this plz!!
-    url = "http://www.proofofexistence.com/api/check?d=%s" % (d)
-    result = urlfetch.fetch(url)
-    if result.status_code == 200:
-        j = json.loads(result.content)
-        return j["success"]
-    else:
-        logging.error("Error accessing our own API: " + str(result.status_code))
-        return None
+  # FIXME: don't do this plz!!
+  url = "http://www.proofofexistence.com/api/check?d=%s" % (d)
+  result = urlfetch.fetch(url)
+  if result.status_code == 200:
+    j = json.loads(result.content)
+    return j["success"]
+  else:
+    logging.error("Error accessing our own API: " + str(result.status_code))
+    return None
 
 def sendmany(recipient_list, _from=None):
-    url = get_base_blockchain_url("sendmany")
-    # can't do it using python dict because we have repeated addresses
-    recipients = "{"
-    for addr, satoshis in recipient_list:
-        recipients += '"%s":%s,' % (addr, satoshis)
-    recipients = recipients[:-1]
-    recipients += "}"
-    url += "&recipients=%s&shared=%s&fee=%s" % (recipients, "false", TX_FEES)
-    if _from:
-        url += "&from=%s" % (_from)
-    result = urlfetch.fetch(url)
-    if result.status_code == 200:
-        j = json.loads(result.content)
-        return (j.get("tx_hash"), j.get("message"))
-    else:
-        logging.error('There was an error contacting the Blockchain.info API')
-        return None
+  url = get_base_blockchain_url("sendmany")
+  # can't do it using python dict because we have repeated addresses
+  recipients = "{"
+  for addr, satoshis in recipient_list:
+    recipients += '"%s":%s,' % (addr, satoshis)
+  recipients = recipients[:-1]
+  recipients += "}"
+  url += "&recipients=%s&shared=%s&fee=%s" % (recipients, "false", TX_FEES)
+  if _from:
+    url += "&from=%s" % (_from)
+  result = urlfetch.fetch(url)
+  if result.status_code == 200:
+    j = json.loads(result.content)
+    return (j.get("tx_hash"), j.get("message"))
+  else:
+    logging.error('There was an error contacting the Blockchain.info API')
+    return None
 
 def get_tx(tx_hash):
-    url = BASE_BLOCKCHAIN_URL + "/rawtx/%s" % (tx_hash)
-    result = urlfetch.fetch(url)
-    if result.status_code == 200:
-        return json.loads(result.content)
-    else:
-        logging.error('There was an error contacting the Blockchain.info API')
-        return None
+  url = BASE_BLOCKCHAIN_URL + "/rawtx/%s" % (tx_hash)
+  result = urlfetch.fetch(url)
+  if result.status_code == 200:
+    return json.loads(result.content)
+  else:
+    logging.error('There was an error contacting the Blockchain.info API')
+    return None
 def get_block(height):
-    if not height:
-        return None
-    url = BASE_BLOCKCHAIN_URL + "/block-height/%s?format=json" % (height)
-    result = urlfetch.fetch(url)
-    if result.status_code == 200:
-        return json.loads(result.content).get("blocks")[0]
-    else:
-        logging.error('There was an error contacting the Blockchain.info API')
-        return None
+  if not height:
+    return None
+  url = BASE_BLOCKCHAIN_URL + "/block-height/%s?format=json" % (height)
+  result = urlfetch.fetch(url)
+  if result.status_code == 200:
+    return json.loads(result.content).get("blocks")[0]
+  else:
+    logging.error('There was an error contacting the Blockchain.info API')
+    return None
 
 def get_txs_for_addr(self, addr, limit=5):
-    url = BASE_BLOCKCHAIN_URL + "/address/%s?format=json&limit=%s" % (addr, limit)
-    result = urlfetch.fetch(url)
-    if result.status_code == 200:
-        j = json.loads(result.content)
-        return [(tx["hash"], tx["time"]) for tx in j["txs"]]
-    else:
-        logging.error("Error accessing blockchain API: " + str(result.status_code))
-        return None
+  url = BASE_BLOCKCHAIN_URL + "/address/%s?format=json&limit=%s" % (addr, limit)
+  result = urlfetch.fetch(url)
+  if result.status_code == 200:
+    j = json.loads(result.content)
+    return [(tx["hash"], tx["time"]) for tx in j["txs"]]
+  else:
+    logging.error("Error accessing blockchain API: " + str(result.status_code))
+    return None
 
 def has_txs(self, addr):
-    return len(get_txs_for_addr(addr, 1)) > 0
+  return len(get_txs_for_addr(addr, 1)) > 0
 
 def callback_secret_valid(secret):
-    return secret == CALLBACK_SECRET
+  return secret == CALLBACK_SECRET
 
 def get_encrypted_wallet(offline=True):
-    if offline:
-        return BLOCKCHAIN_ENCRYPTED_WALLET
-    url = BASE_BLOCKCHAIN_URL + "/wallet/%s?format=%s" % (BLOCKCHAIN_WALLET_GUID, "json")
-    result = urlfetch.fetch(url)
-    if result.status_code == 200:
-        j = json.loads(result.content)
-        return j
-    else:
-        logging.error("Blockchain Error getting wallet from url %s, got result \n%d %s" % (url, result.status_code, result.content))
-        return None
+  if offline:
+    return BLOCKCHAIN_ENCRYPTED_WALLET
+  url = BASE_BLOCKCHAIN_URL + "/wallet/%s?format=%s" % (BLOCKCHAIN_WALLET_GUID, "json")
+  result = urlfetch.fetch(url)
+  if result.status_code == 200:
+    j = json.loads(result.content)
+    return j
+  else:
+    logging.error("Blockchain Error getting wallet from url %s, got result \n%d %s" % (url, result.status_code, result.content))
+    return None
 
 BS = AES.block_size
 pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS) 
 unpad = lambda s : s[0:-ord(s[-1])]
 
 def decrypt_wallet(encrypted):
-    password = BLOCKCHAIN_PASSWORD_1
-    iterations = default_pbkdf2_iterations
-    
-    enc = base64.b64decode(encrypted)
-    iv = enc[:AES.block_size]
-    key = PBKDF2(password, iv, dkLen=32, count=iterations)  
-    cipher = AES.new(key, AES.MODE_CBC, iv)
-    content = unpad(cipher.decrypt(enc[AES.block_size:]))
-    return json.loads(content)
+  password = BLOCKCHAIN_PASSWORD_1
+  iterations = default_pbkdf2_iterations
+  
+  enc = base64.b64decode(encrypted)
+  iv = enc[:AES.block_size]
+  key = PBKDF2(password, iv, dkLen=32, count=iterations)  
+  cipher = AES.new(key, AES.MODE_CBC, iv)
+  content = unpad(cipher.decrypt(enc[AES.block_size:]))
+  return json.loads(content)
 
 def construct_data_tx(data, _from):
-    # inputs
-    coins_from = blockchain_info.coin_sources_for_address(_from)
-    min_coin_value, min_idx, min_h, min_script = max((tx_out.coin_value, idx, h, tx_out.script) for h, idx, tx_out in coins_from)
-    unsigned_txs_out = [UnsignedTxOut(min_h, min_idx, min_coin_value, min_script)]
-    
-    # outputs
-    if min_coin_value > TX_FEES * 2:
-        return "max output greater than twice the threshold, too big."
-    if min_coin_value < TX_FEES:
-        return "max output smaller than threshold, too small."
-    script_text = "OP_RETURN %s" % data.encode("hex")
-    script_bin = tools.compile(script_text)
-    new_txs_out = [TxOut(0, script_bin)]
-    version = 1
-    lock_time = 0
-    unsigned_tx = UnsignedTx(version, unsigned_txs_out, new_txs_out, lock_time)
-    return unsigned_tx
+  # inputs
+  coins_from = blockchain_info.coin_sources_for_address(_from)
+  min_coin_value, min_idx, min_h, min_script = max((tx_out.coin_value, idx, h, tx_out.script) for h, idx, tx_out in coins_from)
+  unsigned_txs_out = [UnsignedTxOut(min_h, min_idx, min_coin_value, min_script)]
+  
+  # outputs
+  if min_coin_value > TX_FEES * 2:
+    return "max output greater than twice the threshold, too big."
+  if min_coin_value < TX_FEES:
+    return "max output smaller than threshold, too small."
+  script_text = "OP_RETURN %s" % data.encode("hex")
+  script_bin = tools.compile(script_text)
+  new_txs_out = [TxOut(0, script_bin)]
+  version = 1
+  lock_time = 0
+  unsigned_tx = UnsignedTx(version, unsigned_txs_out, new_txs_out, lock_time)
+  return unsigned_tx
 
 
 def tx2hex(tx):
-    s = io.BytesIO()
-    tx.stream(s)
-    tx_bytes = s.getvalue()
-    tx_hex = binascii.hexlify(tx_bytes).decode("utf8")
-    return tx_hex
+  s = io.BytesIO()
+  tx.stream(s)
+  tx_bytes = s.getvalue()
+  tx_hex = binascii.hexlify(tx_bytes).decode("utf8")
+  return tx_hex
 
 
 def publish_data_old(doc):
-    recipient_list = [(addr, 1) for addr in doc.get_address_repr()]
-    return sendmany(recipient_list, PAYMENT_ADDRESS)
+  recipient_list = [(addr, 1) for addr in doc.get_address_repr()]
+  return sendmany(recipient_list, PAYMENT_ADDRESS)
 
 def pushtxn(hex_tx):
-    """Eligius pushtxn API"""
-    url = "http://eligius.st/~wizkid057/newstats/pushtxn.php"
-    result = urlfetch.fetch(url,
-                method=urlfetch.POST,
-                payload="transaction="+hex_tx
-                )
-    if result.status_code == 200:
-        return hex_tx, result.content
-    else:
-        logging.error("Error accessing eligius API")
-        return None
-    
+  """Eligius pushtxn API"""
+  url = "http://eligius.st/~wizkid057/newstats/pushtxn.php"
+  result = urlfetch.fetch(url,
+        method=urlfetch.POST,
+        payload="transaction="+hex_tx
+        )
+
+  if result.status_code == 200:
+    return hex_tx, result.content
+  else:
+    logging.error("Error accessing eligius API")
+    return None
+  
 def publish_data(data):
-    secret_exponent = wif_to_secret_exponent(PAYMENT_PRIVATE_KEY)
-    _from = PAYMENT_ADDRESS
-    
-    unsigned_tx = construct_data_tx(data, _from)
-    if type(unsigned_tx) == str: # error
-        return (None, unsigned_tx)
-    signed_tx = unsigned_tx.sign(SecretExponentSolver([secret_exponent]))
-    tx_hex = tx2hex(signed_tx)
-    return pushtxn(tx_hex)
+  secret_exponent = wif_to_secret_exponent(PAYMENT_PRIVATE_KEY)
+  _from = PAYMENT_ADDRESS
+  
+  unsigned_tx = construct_data_tx(data, _from)
+  if type(unsigned_tx) == str: # error
+    return (None, unsigned_tx)
+  signed_tx = unsigned_tx.sign(SecretExponentSolver([secret_exponent]))
+  tx_hex = tx2hex(signed_tx)
+  return pushtxn(tx_hex)
