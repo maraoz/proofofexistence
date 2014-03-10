@@ -1,6 +1,7 @@
 
 from google.appengine.ext import db
 from pycoin.encoding import hash160_sec_to_bitcoin_address
+from blockchain import new_address
 import datetime
 
 class LatestBlockchainDocuments(db.Model):
@@ -19,34 +20,30 @@ class LatestBlockchainDocuments(db.Model):
       inst.put()
     return inst
 
-class DocumentProof(db.Model):
-  digest = db.StringProperty()
-  tx = db.StringProperty()
-  timestamp = db.DateTimeProperty()
-  blockstamp = db.DateTimeProperty()
-  
 class Document(db.Model):
   """Models a proof of document existence at a certain time"""
   digest = db.StringProperty()
   pending = db.BooleanProperty()
   tx = db.StringProperty()
+  payment_address = db.StringProperty()
 
   timestamp = db.DateTimeProperty(auto_now_add=True)
+  txstamp = db.DateTimeProperty(auto_now_add=True)
   blockstamp = db.DateTimeProperty()
 
+  def payment_received(self):
+    return not self.pending
+
   def to_dict(self):
+    if not self.payment_address:
+      self.payment_address = new_address()
+      self.put()
     d = db.to_dict(self)
     return d
 
-  def get_address_repr(self):
-    data = self.digest.decode("hex")
-    lpart = data[:20]
-    rpart = data[20:] + ("\x00" * 8)
-    return [hash160_sec_to_bitcoin_address(part) for part in [lpart, rpart]]
-
   def confirmed(self, tx_hash, tx_timestamp):
     self.tx = tx_hash
-    self.blockstamp = datetime.datetime.fromtimestamp(tx_timestamp)
+    self.txstamp = datetime.datetime.fromtimestamp(tx_timestamp)
     self.pending = False
     self.put()
 
@@ -55,8 +52,13 @@ class Document(db.Model):
     return cls.all().filter("digest = ", digest).get()
 
   @classmethod
+  def get_by_address(cls, address):
+    return cls.all().filter('payment_address = ', address).get()
+
+  @classmethod
   def new(cls, digest):
     d = cls(digest=digest)
+    d.pending = True
     d.put()
     return d
 
@@ -71,6 +73,6 @@ class Document(db.Model):
 
   @classmethod
   def get_pending(cls):
-    return cls.all().filter("pending == ", True).run()
+    return cls.all().filter("pending == ", True).filter("tx == ", None).run()
 
 

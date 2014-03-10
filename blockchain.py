@@ -1,6 +1,6 @@
-"""
+'''
 Blockchain.info Python Client for the JSON Merchant API for Google App Engine.
-"""
+'''
 
 from google.appengine.api import urlfetch
 import logging
@@ -43,42 +43,44 @@ def satoshi2btc(x):
   return x / float(B2S)
 
 
-BASE_BLOCKCHAIN_URL = "https://blockchain.info"
+BASE_BLOCKCHAIN_URL = 'https://blockchain.info'
 
 def get_base_blockchain_url(command):
   url = BASE_BLOCKCHAIN_URL
-  url += "/merchant/%s/%s?password=%s" % (BLOCKCHAIN_WALLET_GUID, command, BLOCKCHAIN_PASSWORD_1)
+  url += '/merchant/%s/%s?password=%s' % (BLOCKCHAIN_WALLET_GUID, command, BLOCKCHAIN_PASSWORD_1)
   if len(BLOCKCHAIN_PASSWORD_2) > 0:
-    url += "&second_password=%s" % (BLOCKCHAIN_PASSWORD_2)
+    url += '&second_password=%s' % (BLOCKCHAIN_PASSWORD_2)
   return url
 
-def new_address():
-  url = get_base_blockchain_url("new_address")
+def new_address(label=None):
+  url = get_base_blockchain_url('new_address')
+  if label:
+    url += '&label='+str(label)
   result = urlfetch.fetch(url)
   if result.status_code == 200:
     j = json.loads(result.content)
-    return j["address"]
+    return j['address']
   else:
     logging.error('There was an error contacting the Blockchain.info API')
     return None
 
 def address_balance(addr):
-  url = BASE_BLOCKCHAIN_URL + "/address/%s?format=json&limit=0" % addr
+  url = BASE_BLOCKCHAIN_URL + '/address/%s?format=json&limit=0' % addr
   result = urlfetch.fetch(url)
   if result.status_code == 200:
-    return json.loads(result.content)["final_balance"]
+    return json.loads(result.content)['final_balance']
   else:
     logging.error('There was an error contacting the Blockchain.info API')
     return None
 
 def payment(to, satoshis, _from=None):
-  url = get_base_blockchain_url("payment")
-  url += "&to=%s&amount=%s&shared=%s&fee=%s" % (to, int(satoshis), "false", TX_FEES)
+  url = get_base_blockchain_url('payment')
+  url += '&to=%s&amount=%s&shared=%s&fee=%s' % (to, int(satoshis), 'false', TX_FEES)
   if _from:
-    url += "&from=%s" % (_from)
+    url += '&from=%s' % (_from)
   result = urlfetch.fetch(url)
   if result.status_code == 200:
-    return json.loads(result.content).get("tx_hash")
+    return json.loads(result.content).get('tx_hash')
   else:
     logging.error('There was an error contacting the Blockchain.info API')
     return None
@@ -86,36 +88,36 @@ def payment(to, satoshis, _from=None):
 
 def do_check_document(self, d):
   # FIXME: don't do this plz!!
-  url = "http://www.proofofexistence.com/api/check?d=%s" % (d)
+  url = 'http://www.proofofexistence.com/api/check?d=%s' % (d)
   result = urlfetch.fetch(url)
   if result.status_code == 200:
     j = json.loads(result.content)
-    return j["success"]
+    return j['success']
   else:
-    logging.error("Error accessing our own API: " + str(result.status_code))
+    logging.error('Error accessing our own API: ' + str(result.status_code))
     return None
 
 def sendmany(recipient_list, _from=None):
-  url = get_base_blockchain_url("sendmany")
+  url = get_base_blockchain_url('sendmany')
   # can't do it using python dict because we have repeated addresses
-  recipients = "{"
+  recipients = '{'
   for addr, satoshis in recipient_list:
-    recipients += '"%s":%s,' % (addr, satoshis)
+    recipients += '\'%s\':%s,' % (addr, satoshis)
   recipients = recipients[:-1]
-  recipients += "}"
-  url += "&recipients=%s&shared=%s&fee=%s" % (recipients, "false", TX_FEES)
+  recipients += '}'
+  url += '&recipients=%s&shared=%s&fee=%s' % (recipients, 'false', TX_FEES)
   if _from:
-    url += "&from=%s" % (_from)
+    url += '&from=%s' % (_from)
   result = urlfetch.fetch(url)
   if result.status_code == 200:
     j = json.loads(result.content)
-    return (j.get("tx_hash"), j.get("message"))
+    return (j.get('tx_hash'), j.get('message'))
   else:
     logging.error('There was an error contacting the Blockchain.info API')
     return None
 
 def get_tx(tx_hash):
-  url = BASE_BLOCKCHAIN_URL + "/rawtx/%s" % (tx_hash)
+  url = BASE_BLOCKCHAIN_URL + '/rawtx/%s' % (tx_hash)
   result = urlfetch.fetch(url)
   if result.status_code == 200:
     return json.loads(result.content)
@@ -125,22 +127,22 @@ def get_tx(tx_hash):
 def get_block(height):
   if not height:
     return None
-  url = BASE_BLOCKCHAIN_URL + "/block-height/%s?format=json" % (height)
+  url = BASE_BLOCKCHAIN_URL + '/block-height/%s?format=json' % (height)
   result = urlfetch.fetch(url)
   if result.status_code == 200:
-    return json.loads(result.content).get("blocks")[0]
+    return json.loads(result.content).get('blocks')[0]
   else:
     logging.error('There was an error contacting the Blockchain.info API')
     return None
 
 def get_txs_for_addr(self, addr, limit=5):
-  url = BASE_BLOCKCHAIN_URL + "/address/%s?format=json&limit=%s" % (addr, limit)
+  url = BASE_BLOCKCHAIN_URL + '/address/%s?format=json&limit=%s' % (addr, limit)
   result = urlfetch.fetch(url)
   if result.status_code == 200:
     j = json.loads(result.content)
-    return [(tx["hash"], tx["time"]) for tx in j["txs"]]
+    return [(tx['hash'], tx['time']) for tx in j['txs']]
   else:
-    logging.error("Error accessing blockchain API: " + str(result.status_code))
+    logging.error('Error accessing blockchain API: ' + str(result.status_code))
     return None
 
 def has_txs(self, addr):
@@ -152,13 +154,13 @@ def callback_secret_valid(secret):
 def get_encrypted_wallet(offline=True):
   if offline:
     return BLOCKCHAIN_ENCRYPTED_WALLET
-  url = BASE_BLOCKCHAIN_URL + "/wallet/%s?format=%s" % (BLOCKCHAIN_WALLET_GUID, "json")
+  url = BASE_BLOCKCHAIN_URL + '/wallet/%s?format=%s' % (BLOCKCHAIN_WALLET_GUID, 'json')
   result = urlfetch.fetch(url)
   if result.status_code == 200:
     j = json.loads(result.content)
     return j
   else:
-    logging.error("Blockchain Error getting wallet from url %s, got result \n%d %s" % (url, result.status_code, result.content))
+    logging.error('Blockchain Error getting wallet from url %s, got result \n%d %s' % (url, result.status_code, result.content))
     return None
 
 BS = AES.block_size
@@ -184,10 +186,10 @@ def construct_data_tx(data, _from):
   
   # outputs
   if min_coin_value > TX_FEES * 2:
-    return "max output greater than twice the threshold, too big."
+    return 'max output greater than twice the threshold, too big.'
   if min_coin_value < TX_FEES:
-    return "max output smaller than threshold, too small."
-  script_text = "OP_RETURN %s" % data.encode("hex")
+    return 'max output smaller than threshold, too small.'
+  script_text = 'OP_RETURN %s' % data.encode('hex')
   script_bin = tools.compile(script_text)
   new_txs_out = [TxOut(0, script_bin)]
   version = 1
@@ -200,7 +202,7 @@ def tx2hex(tx):
   s = io.BytesIO()
   tx.stream(s)
   tx_bytes = s.getvalue()
-  tx_hex = binascii.hexlify(tx_bytes).decode("utf8")
+  tx_hex = binascii.hexlify(tx_bytes).decode('utf8')
   return tx_hex
 
 
@@ -209,17 +211,17 @@ def publish_data_old(doc):
   return sendmany(recipient_list, PAYMENT_ADDRESS)
 
 def pushtxn(hex_tx):
-  """Eligius pushtxn API"""
-  url = "http://eligius.st/~wizkid057/newstats/pushtxn.php"
+  '''Eligius pushtxn API'''
+  url = 'http://eligius.st/~wizkid057/newstats/pushtxn.php'
   result = urlfetch.fetch(url,
         method=urlfetch.POST,
-        payload="transaction="+hex_tx
+        payload='transaction='+hex_tx
         )
 
   if result.status_code == 200:
     return hex_tx, result.content
   else:
-    logging.error("Error accessing eligius API")
+    logging.error('Error accessing eligius API')
     return None
   
 def publish_data(data):
