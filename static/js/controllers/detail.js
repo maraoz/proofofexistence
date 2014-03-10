@@ -93,7 +93,7 @@ $(document).ready(function() {
       if (data.payment) {
         location.reload();
       } else {
-        setTimeout(askPaymentReceived, 5000);
+        setTimeout(askPaymentReceived, 10000);
       }
     } else {
       onFail();
