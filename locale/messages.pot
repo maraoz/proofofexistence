@@ -1,11 +1,14 @@
-# Translations template for Proof of Existence.
-# Copyright (C) 2014
-# This file is distributed under the same license as the project.
+# Translations template for PROJECT.
+# Copyright (C) 2014 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2014.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"POT-Creation-Date: 2014-02-20 21:30-0600\n"
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2014-03-22 18:46-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -13,6 +16,93 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
+
+#: translation.py:25
+msgid "disclaimer"
+msgstr ""
+
+#: translation.py:26
+msgid "Error!"
+msgstr ""
+
+#: translation.py:27
+msgid "We couldn't find that document"
+msgstr ""
+
+#: translation.py:28
+msgid "Registered in our servers since:"
+msgstr ""
+
+#: translation.py:29
+msgid "Registered in the bitcoin blockchain since:"
+msgstr ""
+
+#: translation.py:30
+msgid "transaction timestamp"
+msgstr ""
+
+#: translation.py:31
+msgid "Document proof embedded in the Bitcoin blockchain!"
+msgstr ""
+
+#: translation.py:32
+msgid "Document proof not yet embedded in the bitcoin blockchain."
+msgstr ""
+
+#: translation.py:33
+msgid ""
+"Payment being processed. Please wait while the bitcoin transaction is "
+"confirmed by the network."
+msgstr ""
+
+#: translation.py:34
+msgid "Transaction"
+msgstr ""
+
+#: translation.py:35
+msgid "Must select a file to upload"
+msgstr ""
+
+#: translation.py:36
+#, python-format
+msgid "File already exists in the system since %s. Redirecting..."
+msgstr ""
+
+#: translation.py:37
+msgid "File successfully added to system. Redirecting..."
+msgstr ""
+
+#: translation.py:38
+msgid "Document Digest"
+msgstr ""
+
+#: translation.py:39
+msgid "Timestamp"
+msgstr ""
+
+#: translation.py:40
+msgid "Initializing"
+msgstr ""
+
+#: translation.py:41
+msgid "Now hashing... "
+msgstr ""
+
+#: translation.py:42
+msgid "Loading document..."
+msgstr ""
+
+#: translation.py:43
+msgid "Preparing to hash "
+msgstr ""
+
+#: translation.py:44
+msgid " bytes, last modified: "
+msgstr ""
+
+#: translation.py:45
+msgid "n/a"
+msgstr ""
 
 #: httplib2/__init__.py:410
 #, python-format

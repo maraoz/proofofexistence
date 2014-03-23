@@ -3,9 +3,10 @@
 
 import webapp2, jinja2, os, hashlib, logging, urllib
 from webapp2_extras import i18n
-from webapp2_extras.i18n import gettext
+from webapp2_extras.i18n import gettext as _
 import json as json
 import datetime
+from translation import get_client_side_translations, get_preferred_locale
 
 from google.appengine.api import urlfetch
 
@@ -40,39 +41,28 @@ def export_timestamp(timestamp):
 
 
 class StaticHandler(webapp2.RequestHandler):
-    def render_template(self, name, preferred_locale):
+    def render_template(self, name, preferred_locale, client_side_translations):
         if name == "":
             name = "index"
 
         values = {
             "name": name,
-            "preferred_locale": preferred_locale
+            "preferred_locale": preferred_locale,
+            "client_side_translations": json.dumps(client_side_translations)
         }
         self.response.write(JINJA_ENVIRONMENT.get_template("templates/" + name + '.html').render(values))
     
     def get(self, _):
-        known_locales = ["en_US", "es"]
-        preferred_locale = "en_US"
-        if self.request.get("lang"):
-            preferred_locale = self.request.get("lang")
-        elif self.request.cookies.has_key("language"):
-            preferred_locale = self.request.cookies["language"]
-        elif self.request.headers.get("accept_language"):
-            preferred_locale = self.request.headers.get("accept_language")
-        if preferred_locale not in known_locales:
-            if preferred_locale.split("_")[0] not in known_locales:
-                # this locale has no known match
-                preferred_locale = "en_US"
-            else:
-                # this locale has a similar match
-                preferred_locale = preferred_locale.split("_")[0]
+    	# determine preferred language
+        preferred_locale = get_preferred_locale(self.request)
         i18n.get_i18n().set_locale(preferred_locale)
-        
+        client_side_translations = get_client_side_translations()
         name = self.request.path.split("/")[1]
+        
         try:
-            self.render_template(name, preferred_locale)
+            self.render_template(name, preferred_locale, client_side_translations)
         except IOError, e:
-            self.render_template("error", preferred_locale)
+            self.render_template("error", preferred_locale, client_side_translations)
 
 
 class JsonAPIHandler(webapp2.RequestHandler):
