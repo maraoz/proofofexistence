@@ -9,7 +9,6 @@ from admin import PendingHandler, AutopayHandler, BootstrapHandler, \
 from api import ExternalRegisterHandler, ExternalStatusHandler
 from secrets import SECRET_ADMIN_PATH
 
-
 app = webapp2.WSGIApplication([
   # static files
   ('/((?!api).)*', StaticHandler),
@@ -34,4 +33,3 @@ app = webapp2.WSGIApplication([
   ('/api/v1/register', ExternalRegisterHandler),
   ('/api/v1/status', ExternalStatusHandler)
 ], debug=False)
-

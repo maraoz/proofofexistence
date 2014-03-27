@@ -1,0 +1,377 @@
+# Spanish translations for Proof of Existence.
+# This file is distributed under the same license as the project.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2014-03-26 21:08-0500\n"
+"PO-Revision-Date: 2014-03-26 21:09-0500\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 1.3\n"
+
+#: translation.py:25
+msgid "disclaimer"
+msgstr ""
+
+#: translation.py:26
+msgid "Error!"
+msgstr "Error!"
+
+#: translation.py:27
+msgid "We couldn't find that document"
+msgstr ""
+
+#: translation.py:28
+msgid "Registered in our servers since:"
+msgstr ""
+
+#: translation.py:29
+msgid "Registered in the bitcoin blockchain since:"
+msgstr ""
+
+#: translation.py:30
+msgid "transaction timestamp"
+msgstr "timestamp de la transacción"
+
+#: translation.py:31
+msgid "Document proof embedded in the Bitcoin blockchain!"
+msgstr ""
+
+#: translation.py:32
+msgid "Document proof not yet embedded in the bitcoin blockchain."
+msgstr ""
+
+#: translation.py:33
+msgid ""
+"Payment being processed. Please wait while the bitcoin transaction is "
+"confirmed by the network."
+msgstr ""
+
+#: translation.py:34
+msgid "Transaction"
+msgstr "Transacción"
+
+#: translation.py:35
+msgid "Must select a file to upload"
+msgstr ""
+
+#: translation.py:36
+#, python-format
+msgid "File already exists in the system since %s. Redirecting..."
+msgstr ""
+
+#: translation.py:37
+msgid "File successfully added to system. Redirecting..."
+msgstr ""
+
+#: translation.py:38
+msgid "Document Digest"
+msgstr ""
+
+#: translation.py:39
+msgid "Document hash: "
+msgstr ""
+
+#: translation.py:40
+msgid "Timestamp"
+msgstr "Timestamp"
+
+#: translation.py:41
+msgid "Initializing"
+msgstr "Inicializando"
+
+#: translation.py:42
+msgid "Now hashing... "
+msgstr ""
+
+#: translation.py:43
+msgid "Loading document..."
+msgstr ""
+
+#: translation.py:44
+msgid "Preparing to hash "
+msgstr ""
+
+#: translation.py:45
+msgid " bytes, last modified: "
+msgstr ""
+
+#: translation.py:46
+msgid "n/a"
+msgstr "n/a"
+
+#: templates/about.html:3
+msgid "What is proof of existence?"
+msgstr "¿Qué es proof of existence?"
+
+#: templates/about.html:6
+msgid ""
+"Use our service to anonymously and securely store an online distributed\n"
+"\tproof of existence for any document."
+msgstr ""
+
+#: templates/about.html:8
+msgid ""
+"\n"
+"\t<strong>Your documents are NOT stored in our database or in the Bitcoin"
+" blockchain\n"
+"\t</strong>, so you\n"
+"\tdon't have to worry about your data being accessed by others.\n"
+"\t"
+msgstr ""
+
+#: templates/about.html:15
+msgid ""
+"\n"
+"\tAll we store is a <a\n"
+"\t\t"
+"href=\"https://en.wikipedia.org/wiki/Cryptographic_hash_function\">cryptographic"
+"\n"
+"\t\tdigest</a> of the file, associated to the time in which you uploaded "
+"the\n"
+"\tdocument. In this way, you can later certify that said data existed at\n"
+"\tthat time. This is the first online service allowing you to publicly\n"
+"\tprove that you have certain information without revealing the data or\n"
+"\tyourself, with a decentralized certification based on the <a\n"
+"\t\thref=\"http://bitcoin.org/\">Bitcoin network</a>.\n"
+"\t"
+msgstr ""
+
+#: templates/about.html:27
+msgid ""
+"\n"
+"\tThe key advantages are anonymity, privacy, and getting a decentralized\n"
+"\tproof which can't be removed by third parties or governments. "
+"<strong>Your\n"
+"\t\tdocument's existence is permanently validated by the blockchain even\n"
+"\t\tif this site is compromised or down</strong>, so you don't depend or "
+"need to\n"
+"\ttrust any central authority. All previous timestamping solutions lack\n"
+"\tthis independence.\n"
+"\t"
+msgstr ""
+
+#: templates/about.html:37
+msgid "Common uses"
+msgstr "Usos comunes"
+
+#: templates/about.html:40
+msgid ""
+"Demonstrating data\n"
+"\t\t\townership without revealing actual data."
+msgstr ""
+
+#: templates/about.html:43
+msgid ""
+"You can publicly\n"
+"\t\treveal the digest and if conflict arises you can prove you had the\n"
+"\t\tdata that generates the digest. Useful for copyrighted material,\n"
+"\t\tpatents, etc."
+msgstr ""
+
+#: templates/about.html:49
+msgid "Document timestamping."
+msgstr "Timestamp de documentos."
+
+#: templates/about.html:51
+msgid ""
+"\n"
+"\t\tYou can prove certain data exists at a certain moment of time. As we\n"
+"\t\tuse the <a href=\"https://blockchain.info/\">Bitcoin blockchain</a> "
+"to\n"
+"\t\tstore the document proof, you can certify the existence of your\n"
+"\t\tdocument without the need of a central authority. Use the computing\n"
+"\t\tpower of the whole Bitcoin network to certify your data.\n"
+"\t\t"
+msgstr ""
+
+#: templates/about.html:60
+msgid ""
+"Checking for document\n"
+"\t\t\tintegrity."
+msgstr ""
+
+#: templates/about.html:63
+msgid ""
+"If you store a proof for your document and later\n"
+"\t\tre-upload it, the system will only recognize it if it is completely\n"
+"\t\tand fully the same document. The slightest change, and we'll "
+"recognize\n"
+"\t\tit is different, giving you the security that certified data can't be"
+"\n"
+"\t\tchanged."
+msgstr ""
+
+#: templates/about.html:71
+msgid "Technical foundations"
+msgstr "Fundamentos técnicos"
+
+#: templates/about.html:74
+msgid ""
+"\n"
+"\t\tThe document is certified via embedding its <a\n"
+"\t\t\thref=\"https://en.wikipedia.org/wiki/SHA-2\">SHA256</a> digest in "
+"the\n"
+"\t\tBitcoin blockchain. This is done by generating a valid bitcoin\n"
+"\t\ttransaction to two specially crafted addresses which encode/contain\n"
+"\t\tthe hash. The hash is cut in two fragments, each fragment contained "
+"in\n"
+"\t\tone of these addresses. The hash fragment is used as a replacement "
+"for\n"
+"\t\tthe RIPEMD-160 hash of the public ECDSA key in the <a\n"
+"\t\t\t"
+"href=\"https://en.bitcoin.it/wiki/Technical_background_of_Bitcoin_addresses\">bitcoin"
+"\n"
+"\t\t\taddress generation algorithm</a>. This is why the bitcoins sent in "
+"this\n"
+"\t\tspecial transaction are unspendable, as the addresses are being\n"
+"\t\tgenerated from the document's hash fragments instead of from a "
+"private\n"
+"\t\tECDSA key.\n"
+"\t\t"
+msgstr ""
+
+#: templates/about.html:91
+msgid ""
+"After the addresses are generated and the transaction is\n"
+"\t\tconfirmed, the document is permanently certified and proven to exist\n"
+"\t\tsince the transaction was confirmed. If the document hadn't existed "
+"at\n"
+"\t\tthe time the transaction entered the blockchain, it would have been\n"
+"\t\timpossible to embed its digest in the two addresses and thus create\n"
+"\t\tthe transaction (This is because of the hash function's property of\n"
+"\t\tbeing Second pre-image resistant). Embedding some hash and then\n"
+"\t\tadapting a future document to match the hash is also impossible (due\n"
+"\t\tto the Pre-image resistance of hash functions). This is why once the\n"
+"\t\tbitcoin blockchain confirms the transaction generated for the\n"
+"\t\tdocument, its existence is proven, with no trust in a central\n"
+"\t\tauthority required."
+msgstr ""
+
+#: templates/about.html:104
+msgid ""
+"If anyone wants to manually confirm the document's existence at\n"
+"\t\tthe timestamped time, they should just follow these steps:"
+msgstr ""
+
+#: templates/about.html:107
+msgid "Calculate the document's SHA256 digest."
+msgstr ""
+
+#: templates/about.html:108
+msgid ""
+"Find a transaction in the bitcoin blockchain that sends money\n"
+"\t\t\tto the document's addresses, obtained as described above."
+msgstr ""
+
+#: templates/about.html:110
+msgid "Decode the base58-encoded addresses."
+msgstr ""
+
+#: templates/about.html:111
+msgid ""
+"The digest is embedded replacing the public key's hash in the\n"
+"\t\t\ttwo addresses, followed by trailing zeroes (the digest takes 32\n"
+"\t\t\tbytes, and each address can hold 20 bytes of data)."
+msgstr ""
+
+#: templates/about.html:114
+msgid ""
+"The transaction in the blockchain to those two addresses\n"
+"\t\t\tproves that the document existed at that time."
+msgstr ""
+
+#: templates/about.html:122
+msgid "Developed by"
+msgstr ""
+
+#: templates/about.html:127
+msgid "Press, media, and mentions"
+msgstr "Medios y mencionas"
+
+#: templates/contact.html:2
+msgid "Contact and feedback"
+msgstr "Contacto y feedback"
+
+#: templates/contact.html:5
+msgid "Please help us improve the site by providing feedback!"
+msgstr ""
+
+#: templates/contact.html:11
+msgid "Having problems with our service? We can help:"
+msgstr ""
+
+#: templates/developers.html:2
+msgid "Developer API"
+msgstr ""
+
+#: templates/error.html:9
+msgid "404: Not Found"
+msgstr ""
+
+#: templates/footer.html:8
+msgid "If you find this useful please consider donating:"
+msgstr ""
+
+#: templates/header.html:10
+msgid "Proof of Existence"
+msgstr ""
+
+#: templates/header.html:13
+msgid "Certify"
+msgstr "Certificar"
+
+#: templates/header.html:14
+msgid "About"
+msgstr ""
+
+#: templates/header.html:15
+msgid "API"
+msgstr ""
+
+#: templates/header.html:16
+msgid "Contact"
+msgstr "Contacto"
+
+#: templates/header.html:26
+msgid "Source Code"
+msgstr ""
+
+#: templates/index.html:5
+msgid "Select a document and have it certified in the Bitcoin blockchain"
+msgstr ""
+
+#: templates/index.html:6
+msgid "What?"
+msgstr "¿Qué?"
+
+#: templates/index.html:17
+msgid "Loading..."
+msgstr "Cargar..."
+
+#: templates/index.html:26
+msgid "Upload"
+msgstr "Subir"
+
+#: templates/index.html:33
+msgid "Click or drag and drop your document here."
+msgstr ""
+
+#: templates/index.html:35
+msgid ""
+"Your document will NOT be uploaded. The cryptographic proof is calculated"
+"\n"
+"\t\tclient-side."
+msgstr ""
+
+#: templates/index.html:48
+msgid "Last documents registered:"
+msgstr "Últimos documentos:"
+
+#: templates/index.html:57
+msgid "Last documents confirmed in the blockchain:"
+msgstr ""
+
