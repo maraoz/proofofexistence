@@ -26,9 +26,6 @@ pip-log.txt
 .tox
 nosetests.xml
 
-# Translations
-*.mo
-
 # Mr Developer
 .mr.developer.cfg
 .project
@@ -37,3 +34,4 @@ nosetests.xml
 
 .settings/
 *.swp
+.DS_Store

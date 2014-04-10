@@ -25,6 +25,12 @@
 	min-height: 420px;
 }
 
+select.language {
+	margin-bottom: 0;
+	margin-top: 5px;
+	padding-top: 0;
+}
+
 /* pretty spinner */
 .spinner {
   margin: 50px auto;
