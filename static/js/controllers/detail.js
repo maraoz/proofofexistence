@@ -34,7 +34,7 @@ $(document).ready(function() {
       digest.html(data.digest);
       var times = translate('Registered in our servers since:') + ' <strong>' + data.timestamp + '</strong><br /><br />';
       if (data.blockstamp) {
-        times += translate('Registered in the bitcoin blockchain since:' + ' <strong>' + data.blockstamp + '</strong> (' + translate('transaction timestamp') + ')<br /><br />';
+        times += translate('Registered in the bitcoin blockchain since:') + ' <strong>' + data.blockstamp + '</strong> (' + translate('transaction timestamp') + ')<br /><br />';
       }
       timestamp.html(times);
       var msg = '';
