@@ -2,9 +2,10 @@ import webapp2
 import datetime
 
 from model import Document
-from blockchain import publish_data
+from blockchain import publish_data, callback_secret_valid
 from base import JsonAPIHandler
 from secrets import SECRET_ADMIN_PATH
+from config import MIN_SATOSHIS_PAYMENT
 
 class BootstrapHandler(JsonAPIHandler):
   def handle(self):
