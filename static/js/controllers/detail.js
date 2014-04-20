@@ -9,6 +9,7 @@ $(document).ready(function() {
   var confirming_message = $('#confirming_message');
   var tx = $('#tx');
   var padd = $('#payment_address');
+  var plink = $('#payment_link');
 
   var pathname = window.location.pathname;
   var uuid = pathname.split('/')[2];
@@ -54,14 +55,16 @@ $(document).ready(function() {
         msg = translate('Document proof not yet embedded in the bitcoin blockchain.');
         clz = 'alert-danger';
         img_src = 'warn.png';
+        var uri = 'bitcoin:'+data.payment_address+'?amount=0.005'
         var qrcode = new QRCode('qr', {
-          text: data.payment_address,
+          text: uri,
           width: 256,
           height: 256,
           correctLevel : QRCode.CorrectLevel.H
         });
         askPaymentReceived();
         padd.text(data.payment_address);
+        plink.attr('href', uri);
         certify_message.show();
       }
       blockchain_message.html(msg);
