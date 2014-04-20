@@ -32,4 +32,4 @@ app = webapp2.WSGIApplication([
   # public API
   ('/api/v1/register', ExternalRegisterHandler),
   ('/api/v1/status', ExternalStatusHandler)
-], debug=False)
+], debug=True)

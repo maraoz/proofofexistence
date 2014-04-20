@@ -26,12 +26,12 @@ class LatestDocumentsHandler(JsonAPIHandler):
 
 class DigestStoreHandler(JsonAPIHandler):
   def store_digest(self, digest):
-    docproof = Document.get_doc(digest)
-    if docproof:
+    old_doc = Document.get_doc(digest)
+    if old_doc:
       return {"success" : False, "reason": "existing", "digest": digest, "args": [export_timestamp(docproof.timestamp)]}
 
     d = Document.new(digest)
-    self.doc = d
+    self.doc = d # don't remove, needed for API
     return {"success": True, "digest": d.digest}
 
 class DocumentUploadHandler(DigestStoreHandler):

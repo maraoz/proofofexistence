@@ -86,7 +86,7 @@ def payment(to, satoshis, _from=None):
     return None
 
 
-def do_check_document(self, d):
+def do_check_document(d):
   # FIXME: don't do this plz!!
   url = 'http://www.proofofexistence.com/api/check?d=%s' % (d)
   result = urlfetch.fetch(url)
@@ -135,7 +135,7 @@ def get_block(height):
     logging.error('There was an error contacting the Blockchain.info API')
     return None
 
-def get_txs_for_addr(self, addr, limit=5):
+def get_txs_for_addr(addr, limit=5):
   url = BASE_BLOCKCHAIN_URL + '/address/%s?format=json&limit=%s' % (addr, limit)
   result = urlfetch.fetch(url)
   if result.status_code == 200:
@@ -145,7 +145,7 @@ def get_txs_for_addr(self, addr, limit=5):
     logging.error('Error accessing blockchain API: ' + str(result.status_code))
     return None
 
-def has_txs(self, addr):
+def has_txs(addr):
   return len(get_txs_for_addr(addr, 1)) > 0
 
 def callback_secret_valid(secret):
@@ -181,13 +181,15 @@ def decrypt_wallet(encrypted):
 def construct_data_tx(data, _from):
   # inputs
   coins_from = blockchain_info.coin_sources_for_address(_from)
-  min_coin_value, min_idx, min_h, min_script = max((tx_out.coin_value, idx, h, tx_out.script) for h, idx, tx_out in coins_from)
-  unsigned_txs_out = [UnsignedTxOut(min_h, min_idx, min_coin_value, min_script)]
+  if len(coins_from) < 1:
+    return "No free outputs to spend"
+  max_coin_value, max_idx, max_h, max_script = max((tx_out.coin_value, idx, h, tx_out.script) for h, idx, tx_out in coins_from)
+  unsigned_txs_out = [UnsignedTxOut(max_h, max_idx, max_coin_value, max_script)]
   
   # outputs
-  if min_coin_value > TX_FEES * 2:
+  if max_coin_value > TX_FEES * 2:
     return 'max output greater than twice the threshold, too big.'
-  if min_coin_value < TX_FEES:
+  if max_coin_value < TX_FEES:
     return 'max output smaller than threshold, too small.'
   script_text = 'OP_RETURN %s' % data.encode('hex')
   script_bin = tools.compile(script_text)
@@ -210,19 +212,21 @@ def publish_data_old(doc):
   recipient_list = [(addr, 1) for addr in doc.get_address_repr()]
   return sendmany(recipient_list, PAYMENT_ADDRESS)
 
-def pushtxn(hex_tx):
-  '''Eligius pushtxn API'''
-  url = 'http://eligius.st/~wizkid057/newstats/pushtxn.php'
+def pushtxn(raw_tx):
+  '''Insight send raw tx API'''
+  url = 'http://live.insight.is/api/tx/send'
   result = urlfetch.fetch(url,
-        method=urlfetch.POST,
-        payload='transaction='+hex_tx
-        )
-
+    method=urlfetch.POST,
+    payload='rawtx='+raw_tx
+  )
   if result.status_code == 200:
-    return hex_tx, result.content
+    j = json.loads(result.content)
+    txid = j.get('txid')
+    return txid, raw_tx
   else:
-    logging.error('Error accessing eligius API')
-    return None
+    msg = 'Error accessing insight API:'+str(result.status_code)
+    logging.error(msg)
+    return None, msg
   
 def publish_data(data):
   secret_exponent = wif_to_secret_exponent(PAYMENT_PRIVATE_KEY)
@@ -232,5 +236,6 @@ def publish_data(data):
   if type(unsigned_tx) == str: # error
     return (None, unsigned_tx)
   signed_tx = unsigned_tx.sign(SecretExponentSolver([secret_exponent]))
-  tx_hex = tx2hex(signed_tx)
-  return pushtxn(tx_hex)
+  raw_tx = tx2hex(signed_tx)
+  txid, message = pushtxn(raw_tx)
+  return txid, message

@@ -3,7 +3,7 @@ import json
 import datetime
 
 from model import Document
-from blockchain import get_txs_for_addr, publish_data, do_check_document,\
+from blockchain import get_txs_for_addr, publish_data,\
   publish_data_old, new_address, callback_secret_valid
 
 from base import JsonAPIHandler

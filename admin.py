@@ -1,8 +1,10 @@
 import webapp2
+import datetime
 
 from model import Document
-from blockchain import publish_data, do_check_document, publish_data_old
+from blockchain import publish_data
 from base import JsonAPIHandler
+from secrets import SECRET_ADMIN_PATH
 
 class BootstrapHandler(JsonAPIHandler):
   def handle(self):
@@ -10,21 +12,23 @@ class BootstrapHandler(JsonAPIHandler):
 
 class PendingHandler(webapp2.RequestHandler):
   def get(self):
-    pending = Document.get_pending()
+    actionable = Document.get_actionable()
     url = SECRET_ADMIN_PATH + '/autopay'
-    for d in pending:
+    for d in actionable:
       self.response.write('<a href="%s?d=%s">%s</a><br /><br />' % (url, d.digest, d.digest))
 
 class AutopayHandler(JsonAPIHandler):
   def handle(self):
     digest = self.request.get("d")
     doc = Document.get_doc(digest)
-    if not doc or not doc.tx:
+    if not doc or doc.tx:
       return {"success" : False, "error": "format"}
     # TODO: add check to prevent double timestamping
-    tx, message = publish_data_old(doc)
-    do_check_document(digest)
-    return {"success" : True, "tx" : tx, "message" : message}
+    txid, message = publish_data(doc.digest.decode('hex'))
+    if txid:
+      doc.tx = txid
+      doc.put()
+    return {"success" : txid is not None, "tx" : txid, "message" : message}
 
 
 class BasePaymentCallback(JsonAPIHandler):
@@ -34,6 +38,7 @@ class BasePaymentCallback(JsonAPIHandler):
       tx_hash = self.request.get("transaction_hash")
       address = self.request.get("address")
       satoshis = int(self.request.get("value"))
+      payment_address = self.request.get("input_address")
     except ValueError, e:
       return "error: value error"
     if not tx_hash:
@@ -44,20 +49,24 @@ class BasePaymentCallback(JsonAPIHandler):
                                                     
     if satoshis <= 0:  # outgoing payment
       return "*ok*"
+    if satoshis < MIN_SATOSHIS_PAYMENT: # not enough
+      return "*ok*"
+
 
     if not test:
-      return self.process_payment(satoshis, digest) 
+      doc = Document.get_by_address(payment_address)
+      if not doc:
+        return {"success" : False, "reason" : "Couldn't find document"}
+      return self.process_payment(satoshis, doc) 
     return "*ok*"
 
-  def process_payment(self, satoshis, digest):
+  def process_payment(self, satoshis, doc):
     secret = self.request.get("secret")
-    if len(digest) != 64 or not callback_secret_valid(secret) or satoshis < MIN_SATOSHIS_PAYMENT:
-      return {"success" : False, "reason" : "format or payment below " + str(MIN_SATOSHIS_PAYMENT)}
+    if not callback_secret_valid(secret):
+      return {"success" : False, "reason" : "secret invalid"}
 
-    doc = Document.get_doc(digest)
-    if not doc:
-      return {"success" : False, "reason" : "Couldn't find document"}
     doc.pending = False
+    doc.txstamp = datetime.datetime.now()
     doc.put()
 
     return {"success" : True}

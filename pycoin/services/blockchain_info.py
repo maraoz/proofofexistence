@@ -4,9 +4,11 @@ import json
 import logging
 
 try:
-    from urllib2 import urlopen
+    from urllib2 import urlopen, HTTPError
 except ImportError:
-    from urllib.request import urlopen
+    from urllib.request import urlopen, HTTPError
+
+from google.appengine.api import urlfetch
 
 from ..tx import TxOut
 
@@ -31,8 +33,11 @@ def coin_sources_for_address(bitcoin_address):
         (tx_hash, tx_output_index, tx_out)
         tx_out is a TxOut item with attrs "value" & "script"
     """
-    URL = "https://blockchain.info/unspent?active=%s" % bitcoin_address
-    r = json.loads(urlopen(URL).read().decode("utf8"))
+    URL = "https://blockchain.info/unspent?active=%s&format=json" % (bitcoin_address)
+    result = urlfetch.fetch(URL)
+    if result.status_code != 200:
+      return []
+    r = json.loads(result.content)
     coins_sources = []
     for unspent_output in r["unspent_outputs"]:
         tx_out = TxOut(unspent_output["value"], binascii.unhexlify(unspent_output["script"].encode()))

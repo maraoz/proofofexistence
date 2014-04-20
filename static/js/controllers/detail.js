@@ -39,8 +39,7 @@ $(document).ready(function() {
       timestamp.html(times);
       var msg = '';
       var clz = '';
-      var in_blockchain = !data.pending;
-      var has_addresses = data.ladd != null && data.radd != null;
+      var in_blockchain = !data.pending && data.tx && data.tx.length > 1;
       var img_src = '';
       if (in_blockchain) {
         msg = translate('Document proof embedded in the Bitcoin blockchain!');
@@ -50,7 +49,7 @@ $(document).ready(function() {
         ladd2.html('<a href="https://blockchain.info/address/' + data.ladd + '">' + data.ladd + '</a>');
         radd2.html('<a href="https://blockchain.info/address/' + data.radd + '">' + data.radd + '</a>');
         confirmed_message.show();
-      } else if (has_addresses) {
+      } else if (!data.pending) {
         msg = translate('Payment being processed. Please wait while ' + 
           'the bitcoin transaction is confirmed by the network.');
         clz = 'alert-warn';

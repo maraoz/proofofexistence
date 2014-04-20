@@ -28,7 +28,7 @@ class Document(db.Model):
   payment_address = db.StringProperty()
 
   timestamp = db.DateTimeProperty(auto_now_add=True)
-  txstamp = db.DateTimeProperty(auto_now_add=True)
+  txstamp = db.DateTimeProperty()
   blockstamp = db.DateTimeProperty()
 
   def payment_received(self):
@@ -36,7 +36,7 @@ class Document(db.Model):
 
   def to_dict(self):
     if not self.payment_address:
-      self.payment_address = new_address()
+      self.payment_address = new_address(self.digest)
       self.put()
     d = db.to_dict(self)
     return d
@@ -59,6 +59,9 @@ class Document(db.Model):
   def new(cls, digest):
     d = cls(digest=digest)
     d.pending = True
+    d.tx = ''
+    d.payment_address = None
+
     d.put()
     return d
 
@@ -72,7 +75,7 @@ class Document(db.Model):
       return cls.all().order("-timestamp").run(limit=cls.LATEST_N)
 
   @classmethod
-  def get_pending(cls):
-    return cls.all().filter("pending == ", True).filter("tx == ", None).run()
+  def get_actionable(cls):
+    return cls.all().filter("pending == ", False).filter("tx == ", '').run()
 
 
