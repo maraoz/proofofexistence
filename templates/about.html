@@ -6,8 +6,7 @@
 	{%trans%}Use our service to anonymously and securely store an online distributed
 	proof of existence for any document.{%endtrans%}
 	{%trans%}
-	<strong>Your documents are NOT stored in our database or in the Bitcoin blockchain
-	</strong>, so you
+	<strong>Your documents are NOT stored in our database or in the bitcoin blockchain</strong>, so you
 	don't have to worry about your data being accessed by others.
 	{%endtrans%}
 </p>
@@ -15,22 +14,22 @@
     {%trans%}
 	All we store is a <a
 		href="https://en.wikipedia.org/wiki/Cryptographic_hash_function">cryptographic
-		digest</a> of the file, associated to the time in which you uploaded the
-	document. In this way, you can later certify that said data existed at
+		digest</a> of the file, linked to the time in which you submitted the
+	document. In this way, you can later certify that the data existed at
 	that time. This is the first online service allowing you to publicly
 	prove that you have certain information without revealing the data or
 	yourself, with a decentralized certification based on the <a
-		href="http://bitcoin.org/">Bitcoin network</a>.
+		href="http://bitcoin.org/">bitcoin network</a>.
 	{%endtrans%}
 </p>
 <p>
     {%trans%}
 	The key advantages are anonymity, privacy, and getting a decentralized
-	proof which can't be removed by third parties or governments. <strong>Your
+	proof which can't be erased or modified by anyone (third parties or governments). <strong>Your
 		document's existence is permanently validated by the blockchain even
 		if this site is compromised or down</strong>, so you don't depend or need to
-	trust any central authority. All previous timestamping solutions lack
-	this independence.
+	trust any central authority. All previous data timestamping solutions lack
+	this freedom.
 	{%endtrans%}
 </p>
 
@@ -50,10 +49,10 @@
 		<br />
 		{%trans%}
 		You can prove certain data exists at a certain moment of time. As we
-		use the <a href="https://blockchain.info/">Bitcoin blockchain</a> to
+		use the <a href="https://blockchain.info/">bitcoin blockchain</a> to
 		store the document proof, you can certify the existence of your
 		document without the need of a central authority. Use the computing
-		power of the whole Bitcoin network to certify your data.
+		power of the whole bitcoin network to certify your data.
 		{%endtrans%}
 	</div>
 	<div class="span4">
@@ -68,51 +67,53 @@
 	</div>
 </div>
 
-<h3 style="padding-top: 40px;">{%trans%}Technical foundations{%endtrans%}</h3>
+<h3 id="technical" style="padding-top: 40px;">{%trans%}Technical foundations{%endtrans%}</h3>
 <div class="row">
 	<p>
 	    {%trans%}
 		The document is certified via embedding its <a
-			href="https://en.wikipedia.org/wiki/SHA-2">SHA256</a> digest in the
-		Bitcoin blockchain. This is done by generating a valid bitcoin
-		transaction to two specially crafted addresses which encode/contain
-		the hash. The hash is cut in two fragments, each fragment contained in
-		one of these addresses. The hash fragment is used as a replacement for
-		the RIPEMD-160 hash of the public ECDSA key in the <a
-			href="https://en.bitcoin.it/wiki/Technical_background_of_Bitcoin_addresses">bitcoin
-			address generation algorithm</a>. This is why the bitcoins sent in this
-		special transaction are unspendable, as the addresses are being
-		generated from the document's hash fragments instead of from a private
-		ECDSA key.
+		href="https://en.wikipedia.org/wiki/SHA-2">SHA256</a> digest in the
+		bitcoin blockchain. This is done by generating a special bitcoin
+		transaction that encodes/contains the hash via an <a 
+    href="">OP_RETURN script</a>. This is a <a href="https://en.bitcoin.it/wiki/Script">
+    bitcoin scripting opcode</a> that marks the transaction output as 
+    <a href="https://en.bitcoin.it/wiki/Script#Provably_Unspendable.2FPrunable_Outputs">
+    provably unspendable</a> and allows a small amount of data to be inserted,
+    which in our case is the document's hash, plus a marker to identify all
+    of our transactions.
 		{%endtrans%}
 	</p>
 
 	<p>
-	    {%trans%}After the addresses are generated and the transaction is
+	    {%trans%}Once the transaction is
 		confirmed, the document is permanently certified and proven to exist
-		since the transaction was confirmed. If the document hadn't existed at
+		at least as early as the time the transaction was confirmed. 
+    If the document hadn't existed at
 		the time the transaction entered the blockchain, it would have been
-		impossible to embed its digest in the two addresses and thus create
-		the transaction (This is because of the hash function's property of
-		being Second pre-image resistant). Embedding some hash and then
+		impossible to embed its digest in the
+		transaction (This is because of the hash function's property of
+		being <a href="http://en.wikipedia.org/wiki/Cryptographic_hash_function#Properties">
+    second pre-image resistant</a>). Embedding some hash and then
 		adapting a future document to match the hash is also impossible (due
-		to the Pre-image resistance of hash functions). This is why once the
+		to the <a href="http://en.wikipedia.org/wiki/Cryptographic_hash_function#Properties">
+    pre-image resistance of hash functions</a>). This is why <strong>once the
 		bitcoin blockchain confirms the transaction generated for the
-		document, its existence is proven, with no trust in a central
-		authority required.{%endtrans%}</p>
+		document, its existence is proven, permanently, with no trust required</strong>.{%endtrans%}</p>
 
 	<p>{%trans%}If anyone wants to manually confirm the document's existence at
 		the timestamped time, they should just follow these steps:{%endtrans%}
 	<ul>
 		<li>{%trans%}Calculate the document's SHA256 digest.{%endtrans%}</li>
-		<li>{%trans%}Find a transaction in the bitcoin blockchain that sends money
-			to the document's addresses, obtained as described above.{%endtrans%}</li>
-		<li>{%trans%}Decode the base58-encoded addresses.{%endtrans%}</li>
-		<li>{%trans%}The digest is embedded replacing the public key's hash in the
-			two addresses, followed by trailing zeroes (the digest takes 32
-			bytes, and each address can hold 20 bytes of data).{%endtrans%}</li>
-		<li>{%trans%}The transaction in the blockchain to those two addresses
-			proves that the document existed at that time.{%endtrans%}</li>
+		<li>{%trans%}Find a transaction in the bitcoin blockchain containing 
+			an OP_RETURN output with the document's hash prepended by our marker bytes,
+      which are 0x444f4350524f4f46 (or 'DOCPROOF' in ascii).{%endtrans%}</li>
+    <li>{%trans%}Some online services like <a href="http://coinsecrets.org/">
+    Coin Secrets</a> or <a href="https://blockchain.info/strange-transactions">
+    blockchain.info's list</a> can help you locate OP_RETURN
+     transactions more easily.{%endtrans%}</li>
+		<li>{%trans%}The existence of that transaction in the blockchain
+			proves that the document existed at the time the transaction
+      got included into a block.{%endtrans%}</li>
 
 	</ul>
 

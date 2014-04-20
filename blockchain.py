@@ -220,6 +220,7 @@ def pushtxn(raw_tx):
   payload = urllib.urlencode({
     "rawtx": raw_tx 
   })
+  return None, raw_tx
   result = urlfetch.fetch(url,
     method=urlfetch.POST,
     payload=payload
@@ -233,7 +234,14 @@ def pushtxn(raw_tx):
     logging.error(msg)
     return None, msg
   
+OP_RETURN_MAX_DATA = 40
+POE_MARKER_BYTES = 'DOCPROOF'
 def publish_data(data):
+
+  data = POE_MARKER_BYTES + data
+  if len(data) > OP_RETURN_MAX_DATA:
+    return None, 'data too long for OP_RETURN: %s' % (data.encode('hex'))
+
   secret_exponent = wif_to_secret_exponent(PAYMENT_PRIVATE_KEY)
   _from = PAYMENT_ADDRESS
   
