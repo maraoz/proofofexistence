@@ -7,10 +7,6 @@ $(document).ready(function() {
   var certify_message = $('#certify_message');
   var confirmed_message = $('#confirmed_message');
   var confirming_message = $('#confirming_message');
-  var ladd1 = $('#ladd1');
-  var radd1 = $('#radd1');
-  var ladd2 = $('#ladd2');
-  var radd2 = $('#radd2');
   var tx = $('#tx');
   var padd = $('#payment_address');
 
@@ -45,17 +41,13 @@ $(document).ready(function() {
         msg = translate('Document proof embedded in the Bitcoin blockchain!');
         clz = 'alert-success';
         img_src = 'check.png';
-        tx.html('<a href="https://blockchain.info/tx/' + data.tx + '"> ' + translate('Transaction') + ' ' + data.tx + '</a>');
-        ladd2.html('<a href="https://blockchain.info/address/' + data.ladd + '">' + data.ladd + '</a>');
-        radd2.html('<a href="https://blockchain.info/address/' + data.radd + '">' + data.radd + '</a>');
+        tx.html('<a href="http://live.insight.is/tx/' + data.tx + '"> ' + translate('Transaction') + ' ' + data.tx + '</a>');
         confirmed_message.show();
       } else if (!data.pending) {
         msg = translate('Payment being processed. Please wait while ' + 
           'the bitcoin transaction is confirmed by the network.');
         clz = 'alert-warn';
         img_src = 'wait.png';
-        ladd1.html('<a href="https://blockchain.info/address/' + data.ladd + '">' + data.ladd + '</a>');
-        radd1.html('<a href="https://blockchain.info/address/' + data.radd + '">' + data.radd + '</a>');
         confirming_message.show();
         $.post('/api/document/check', postData, onCheckSuccess, 'json');
       } else {

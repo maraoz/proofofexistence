@@ -28,7 +28,8 @@ class DigestStoreHandler(JsonAPIHandler):
   def store_digest(self, digest):
     old_doc = Document.get_doc(digest)
     if old_doc:
-      return {"success" : False, "reason": "existing", "digest": digest, "args": [export_timestamp(docproof.timestamp)]}
+      return {"success" : False, "reason": "existing",
+       "digest": digest, "args": [export_timestamp(old_doc.timestamp)]}
 
     d = Document.new(digest)
     self.doc = d # don't remove, needed for API
