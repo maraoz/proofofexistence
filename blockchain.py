@@ -220,7 +220,6 @@ def pushtxn(raw_tx):
   payload = urllib.urlencode({
     "rawtx": raw_tx 
   })
-  return None, raw_tx
   result = urlfetch.fetch(url,
     method=urlfetch.POST,
     payload=payload
