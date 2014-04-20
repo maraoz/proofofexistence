@@ -2,7 +2,7 @@ import webapp2, jinja2, os, hashlib, logging, urllib
 import json
 import datetime
 
-from model import Document, LatestBlockchainDocuments
+from model import Document
 from blockchain import get_txs_for_addr
 
 from base import export_timestamp
@@ -74,11 +74,7 @@ class DocumentCheckHandler(JsonAPIHandler):
     if not doc or not doc.payment_address:
       return {"success" : False, "error": "format"}
     
-    txs = get_txs_for_addr(doc.payment_address)
-    if not txs or len(txs) == 0:
-      return {"success" : False, "error": "no transactions"}
-    tx_hash, tx_timestamp = txs[0]
-    doc.confirmed(tx_hash, tx_timestamp)
+    if not doc.tx:
+      return {"success" : False, "error": "no transaction"}
 
-    LatestBlockchainDocuments.get_inst().add_document(doc)
     return {"success" : True, "tx" : doc.tx}

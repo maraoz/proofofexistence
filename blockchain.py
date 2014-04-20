@@ -6,6 +6,8 @@ from google.appengine.api import urlfetch
 import logging
 import json
 import base64
+import urllib
+from random import random
 from Crypto.Cipher import AES
 from pycoin.tx.script import tools
 from pycoin.services import blockchain_info
@@ -183,7 +185,7 @@ def construct_data_tx(data, _from):
   coins_from = blockchain_info.coin_sources_for_address(_from)
   if len(coins_from) < 1:
     return "No free outputs to spend"
-  max_coin_value, max_idx, max_h, max_script = max((tx_out.coin_value, idx, h, tx_out.script) for h, idx, tx_out in coins_from)
+  max_coin_value, _, max_idx, max_h, max_script = max((tx_out.coin_value, random(), idx, h, tx_out.script) for h, idx, tx_out in coins_from)
   unsigned_txs_out = [UnsignedTxOut(max_h, max_idx, max_coin_value, max_script)]
   
   # outputs
@@ -215,16 +217,19 @@ def publish_data_old(doc):
 def pushtxn(raw_tx):
   '''Insight send raw tx API'''
   url = 'http://live.insight.is/api/tx/send'
+  payload = urllib.urlencode({
+    "rawtx": raw_tx 
+  })
   result = urlfetch.fetch(url,
     method=urlfetch.POST,
-    payload='rawtx='+raw_tx
+    payload=payload
   )
   if result.status_code == 200:
     j = json.loads(result.content)
     txid = j.get('txid')
     return txid, raw_tx
   else:
-    msg = 'Error accessing insight API:'+str(result.status_code)
+    msg = 'Error accessing insight API:'+str(result.status_code)+" "+str(result.content)
     logging.error(msg)
     return None, msg
   

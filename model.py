@@ -8,8 +8,8 @@ class LatestBlockchainDocuments(db.Model):
   """Helper table for latest confirmed documents retrieval"""
   digests = db.StringListProperty()
   
-  def add_document(self, doc):
-    self.digests = [doc.digest] + self.digests[:-1]
+  def add_document(self, digest):
+    self.digests = [digest] + self.digests[:-1]
     self.put()
   
   @classmethod

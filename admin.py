@@ -1,7 +1,7 @@
 import webapp2
 import datetime
 
-from model import Document
+from model import Document, LatestBlockchainDocuments
 from blockchain import publish_data, callback_secret_valid
 from base import JsonAPIHandler
 from secrets import SECRET_ADMIN_PATH
@@ -28,6 +28,7 @@ class AutopayHandler(JsonAPIHandler):
     txid, message = publish_data(doc.digest.decode('hex'))
     if txid:
       doc.tx = txid
+      LatestBlockchainDocuments.get_inst().add_document(digest)
       doc.put()
     return {"success" : txid is not None, "tx" : txid, "message" : message}
 
@@ -57,20 +58,20 @@ class BasePaymentCallback(JsonAPIHandler):
     if not test:
       doc = Document.get_by_address(payment_address)
       if not doc:
-        return {"success" : False, "reason" : "Couldn't find document"}
+        return "error: couldn't find document"
       return self.process_payment(satoshis, doc) 
     return "*ok*"
 
   def process_payment(self, satoshis, doc):
     secret = self.request.get("secret")
     if not callback_secret_valid(secret):
-      return {"success" : False, "reason" : "secret invalid"}
+      return "error: secret invalid"
 
     doc.pending = False
     doc.txstamp = datetime.datetime.now()
     doc.put()
 
-    return {"success" : True}
+    return "*ok*"
   
 
 class PaymentCallback(BasePaymentCallback):
