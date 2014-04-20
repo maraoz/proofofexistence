@@ -8,9 +8,8 @@ from blockchain import get_txs_for_addr
 from base import export_timestamp
 from base import JsonAPIHandler
 
+from config import MIN_SATOSHIS_PAYMENT
 
-BTC_TO_SATOSHI = 100000000
-MIN_SATOSHIS_PAYMENT = int(0.001 * BTC_TO_SATOSHI)
 
 def hash_digest(x):
   hasher = hashlib.new('SHA256')

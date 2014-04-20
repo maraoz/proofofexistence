@@ -8,9 +8,7 @@ from blockchain import get_txs_for_addr, publish_data,\
 
 from base import JsonAPIHandler
 from doc import DigestStoreHandler
-
-BTC_TO_SATOSHI = 100000000
-MIN_SATOSHIS_PAYMENT = int(0.001 * BTC_TO_SATOSHI)
+from config import MIN_SATOSHIS_PAYMENT
 
 class ExternalRegisterHandler(DigestStoreHandler):
   def handle(self):
