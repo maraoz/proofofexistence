@@ -9,7 +9,14 @@ from config import MIN_SATOSHIS_PAYMENT
 
 class BootstrapHandler(JsonAPIHandler):
   def handle(self):
-    return {"success" : True}
+    d = self.request.get('d')
+    tx = self.request.get('tx')
+    ts = self.request.get('ts')
+    txts = self.request.get('txts')
+    doc = Document.import_legacy(d, tx, ts, txts)
+    if doc:
+      return {"success" : True}
+    return {"success" : False}
 
 class PendingHandler(webapp2.RequestHandler):
   def get(self):

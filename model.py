@@ -30,6 +30,8 @@ class Document(db.Model):
   timestamp = db.DateTimeProperty(auto_now_add=True)
   txstamp = db.DateTimeProperty()
   blockstamp = db.DateTimeProperty()
+  
+  legacy = db.BooleanProperty()
 
   def payment_received(self):
     return not self.pending
@@ -59,8 +61,22 @@ class Document(db.Model):
   def new(cls, digest):
     d = cls(digest=digest)
     d.pending = True
+    d.legacy = False
     d.tx = ''
     d.payment_address = None
+
+    d.put()
+    return d
+
+  @classmethod
+  def import_legacy(cls, digest, tx, timestamp, txstamp):
+    d = cls.new(digest)
+    d.pending = False
+    d.legacy = True
+    d.tx = tx
+    d.timestamp = timestamp
+    d.txstamp = txstamp
+    d.payment_address = 'coinbase'
 
     d.put()
     return d
