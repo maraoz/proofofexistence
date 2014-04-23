@@ -9,10 +9,13 @@ from config import MIN_SATOSHIS_PAYMENT
 
 class BootstrapHandler(JsonAPIHandler):
   def handle(self):
-    d = self.request.get('d')
+    d = self.request.get('digest')
     tx = self.request.get('tx')
-    ts = self.request.get('ts')
-    txts = self.request.get('txts')
+    ts = None
+    txts = None
+    if Document.get_doc(d):
+      return {"success" : False}
+
     doc = Document.import_legacy(d, tx, ts, txts)
     if doc:
       return {"success" : True}
@@ -35,6 +38,7 @@ class AutopayHandler(JsonAPIHandler):
     txid, message = publish_data(doc.digest.decode('hex'))
     if txid:
       doc.tx = txid
+      doc.txstamp = datetime.datetime.now()
       LatestBlockchainDocuments.get_inst().add_document(digest)
       doc.put()
     return {"success" : txid is not None, "tx" : txid, "message" : message}
@@ -75,7 +79,6 @@ class BasePaymentCallback(JsonAPIHandler):
       return "error: secret invalid"
 
     doc.pending = False
-    doc.txstamp = datetime.datetime.now()
     doc.put()
 
     return "*ok*"

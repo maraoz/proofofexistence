@@ -30,10 +30,18 @@ $(document).ready(function() {
       confirming_message.hide();
       blockchain_message.show();
       digest.html(data.digest);
-      var times = translate('Registered in our servers since:') + ' <strong>' + data.timestamp + '</strong><br /><br />';
-      if (data.blockstamp) {
-        times += translate('Registered in the bitcoin blockchain since:') + ' <strong>' + data.blockstamp + '</strong> (' + translate('transaction timestamp') + ')<br /><br />';
-      }
+      var times = '';
+      if (data.timestamp)
+        times += translate('Registered in our servers since:') + 
+            ' <strong>' + data.timestamp + '</strong><br />';
+      if (data.txstamp)
+        times += translate('Transaction broadcast timestamp:') + 
+            ' <strong>' + data.txstamp + '</strong><br />';
+      if (data.blockstamp)
+        times += translate('Registered in the bitcoin blockchain since:') +
+          ' <strong>' + data.blockstamp + '</strong> (' + 
+          translate('transaction timestamp') + ')<br />';
+      times += '<br />'
       timestamp.html(times);
       var msg = '';
       var clz = '';
