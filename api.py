@@ -44,8 +44,8 @@ class ExternalStatusHandler(JsonAPIHandler):
     if not doc:
       return {"success": False, "reason": "nonexistent"}
     if doc.tx:
-      return {"success": True, "status": "confirmed"}
-    if doc.ladd and doc.radd:
+      return {"success": True, "status": "confirmed", "transaction": doc.tx}
+    if not doc.payment_received():
       return {"success": True, "status": "pending"}
 
     return {"success": True, "status": "registered"}
