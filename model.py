@@ -36,6 +36,9 @@ class Document(db.Model):
   def payment_received(self):
     return not self.pending
 
+  def is_actionable(self):
+    return self.payment_received() and self.tx == ''
+
   def to_dict(self):
     if not self.payment_address:
       self.payment_address = new_address(self.digest)
