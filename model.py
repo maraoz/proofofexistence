@@ -105,7 +105,7 @@ class Document(db.Model):
     if txid:
       self.tx = txid
       self.txstamp = datetime.datetime.now()
-      LatestBlockchainDocuments.get_inst().add_document(digest)
+      LatestBlockchainDocuments.get_inst().add_document(self.digest)
       self.put()
     return {"success" : txid is not None, "tx" : txid, "message" : message}
 
