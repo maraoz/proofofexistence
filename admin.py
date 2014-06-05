@@ -1,8 +1,8 @@
 import webapp2
 import datetime
 
-from model import Document, LatestBlockchainDocuments
-from blockchain import publish_data, callback_secret_valid
+from model import Document
+from blockchain import callback_secret_valid
 from base import JsonAPIHandler
 from secrets import SECRET_ADMIN_PATH
 from config import MIN_SATOSHIS_PAYMENT
@@ -22,17 +22,9 @@ class AutopayHandler(JsonAPIHandler):
   def handle(self):
     digest = self.request.get("d")
     doc = Document.get_doc(digest)
-    if not doc or doc.tx:
+    if not doc:
       return {"success" : False, "error": "format"}
-    # TODO: add check to prevent double timestamping
-    txid, message = publish_data(doc.digest.decode('hex'))
-    if txid:
-      doc.tx = txid
-      doc.txstamp = datetime.datetime.now()
-      LatestBlockchainDocuments.get_inst().add_document(digest)
-      doc.put()
-    return {"success" : txid is not None, "tx" : txid, "message" : message}
-
+    return doc.blockchain_certify()
 
 class BasePaymentCallback(JsonAPIHandler):
   def handle(self):

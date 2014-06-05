@@ -1,0 +1,4 @@
+cron:
+- description: hourly confirmation bot
+  url: /api/tasks/confirmation
+  schedule: every 2 mins
