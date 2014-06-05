@@ -35,5 +35,5 @@ app = webapp2.WSGIApplication([
   ('/api/v1/status', ExternalStatusHandler),
 
   # cron
-  ('/tasks/confirmation', ConfirmationCron)
+  ('/api/tasks/confirmation', ConfirmationCron)
 ], debug=True)

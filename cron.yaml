@@ -1,4 +1,4 @@
 cron:
 - description: hourly confirmation bot
-  url: /tasks/confirmation
+  url: /api/tasks/confirmation
   schedule: every 2 mins
