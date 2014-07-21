@@ -1,7 +1,7 @@
 
 from google.appengine.ext import db
 from pycoin.encoding import hash160_sec_to_bitcoin_address
-from blockchain import new_address, publish_data
+from blockchain import new_address, publish_data, archive_address
 import datetime
 
 class LatestBlockchainDocuments(db.Model):
@@ -32,6 +32,7 @@ class Document(db.Model):
   blockstamp = db.DateTimeProperty()
   
   legacy = db.BooleanProperty()
+  archived= db.DateTimeProperty()
 
   def payment_received(self):
     return not self.pending
@@ -97,10 +98,33 @@ class Document(db.Model):
   def get_actionable(cls):
     return cls.all().filter("pending == ", False).filter("tx == ", '').run()
 
+  @classmethod
+  def update_schema(cls):
+    ds = cls.all()
+    n = 0
+    for d in ds:
+      n += 1
+    return n
+
+  @classmethod
+  def get_archiveable(cls):
+    limit = datetime.datetime.now() - datetime.timedelta(days=5)
+    return cls.all() \
+      .filter("timestamp < ", limit) \
+      .filter("tx == ", '') \
+      .filter("archived == ", None) \
+      .run(limit=100)
+
+  def archive(self):
+    result = archive_address(self.payment_address)
+    if result.get('archived'):
+      self.archived = datetime.datetime.now()
+      self.put()
+    return result
+
   def blockchain_certify(self):
     if self.tx:
       return {"success" : False, "error": "already certified"}
-    # TODO: add check to prevent double timestamping
     txid, message = publish_data(self.digest.decode('hex'))
     if txid:
       self.tx = txid

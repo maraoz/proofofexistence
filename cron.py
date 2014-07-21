@@ -6,6 +6,20 @@ from model import Document
 from google.appengine.api import mail
 
 from secrets import ADMIN_EMAIL
+from blockchain import auto_consolidate
+class ConsolidationCron(webapp2.RequestHandler):
+  def get(self):
+    archiveable = Document.get_archiveable()
+    processed = False
+    for d in archiveable:
+      res = d.archive()
+      self.response.write("%s %s<br />" % (d.digest, res))
+      processed = True
+    if processed:
+      self.response.write("Running autoconsolidate<br />")
+      auto_consolidate()
+    else:
+      self.response.write("Finished without operation<br />")
 
 class ConfirmationCron(webapp2.RequestHandler):
   def get(self):
