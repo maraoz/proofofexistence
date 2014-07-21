@@ -2,3 +2,6 @@ cron:
 - description: confirmation bot
   url: /api/tasks/confirmation
   schedule: every 1 mins
+- description: consolidation bot
+  url: /api/tasks/consolidation
+  schedule: every day

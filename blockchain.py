@@ -66,6 +66,27 @@ def new_address(label=None):
     logging.error('There was an error contacting the Blockchain.info API')
     return None
 
+
+def archive_address(address):
+  url = get_base_blockchain_url('archive_address')
+  url += '&address=%s' % address
+  result = urlfetch.fetch(url)
+  if result.status_code == 200:
+    return json.loads(result.content)
+  else:
+    logging.error('There was an error contacting the Blockchain.info API')
+    return None
+
+def auto_consolidate(days=10):
+  url = get_base_blockchain_url('auto_consolidate')
+  url += '&days=%s' % days
+  result = urlfetch.fetch(url)
+  if result.status_code == 200:
+    return json.loads(result.content)
+  else:
+    logging.error('There was an error contacting the Blockchain.info API')
+    return None
+
 def address_balance(addr):
   url = BASE_BLOCKCHAIN_URL + '/address/%s?format=json&limit=0' % addr
   result = urlfetch.fetch(url)

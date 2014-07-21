@@ -10,6 +10,12 @@ indexes:
 # automatically uploaded to the admin console when you next deploy
 # your application using appcfg.py.
 
+- kind: Document
+  properties:
+  - name: archived
+  - name: tx
+  - name: timestamp
+
 - kind: DocumentProof
   properties:
   - name: blockstamp
