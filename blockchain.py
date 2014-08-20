@@ -237,7 +237,7 @@ def publish_data_old(doc):
 
 def pushtxn(raw_tx):
   '''Insight send raw tx API'''
-  url = 'http://live.insight.is/api/tx/send'
+  url = 'https://insight.bitpay.com/api/tx/send'
   payload = urllib.urlencode({
     "rawtx": raw_tx 
   })
