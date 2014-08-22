@@ -51,7 +51,7 @@ $(document).ready(function() {
         msg = translate('Document proof embedded in the Bitcoin blockchain!');
         clz = 'alert-success';
         img_src = 'check.png';
-        tx.html('<a href="http://live.insight.is/tx/' + data.tx + '"> ' + translate('Transaction') + ' ' + data.tx + '</a>');
+        tx.html('<a href="https://insight.bitpay.com/tx/' + data.tx + '"> ' + translate('Transaction') + ' ' + data.tx + '</a>');
         confirmed_message.show();
       } else if (!data.pending) {
         msg = translate('Payment being processed. Please wait while ' + 
