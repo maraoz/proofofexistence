@@ -36,3 +36,5 @@ nosetests.xml
 .settings/
 *.swp
 .DS_Store
+purge/
+node_modules/
