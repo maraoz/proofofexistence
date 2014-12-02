@@ -61,6 +61,8 @@ def new_address(label=None):
   result = urlfetch.fetch(url)
   if result.status_code == 200:
     j = json.loads(result.content)
+    if not j.get('address'):
+        logging.error(result.content)
     return j['address']
   else:
     logging.error('There was an error contacting the Blockchain.info API')
