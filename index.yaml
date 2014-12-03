@@ -38,7 +38,8 @@ indexes:
   - name: timestamp
     direction: desc
 
-- kind: Player
+- kind: Document
   properties:
-  - name: searching
-  - name: username
+  - name: pending
+  - name: tx
+  - name: timestamp
