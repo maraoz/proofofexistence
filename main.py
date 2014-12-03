@@ -8,7 +8,7 @@ from admin import PendingHandler, AutopayHandler, BootstrapHandler, \
   PaymentCallback
 from api import ExternalRegisterHandler, ExternalStatusHandler
 from secrets import SECRET_ADMIN_PATH
-from cron import ConfirmationCron, ConsolidationCron
+from cron import ConfirmationCron, ConsolidationCron, PaymentCheckerCron
 
 app = webapp2.WSGIApplication([
   # static files
@@ -36,5 +36,6 @@ app = webapp2.WSGIApplication([
 
   # cron
   ('/api/tasks/confirmation', ConfirmationCron),
+  ('/api/tasks/payment_checker', PaymentCheckerCron),
   ('/api/tasks/consolidation', ConsolidationCron)
 ], debug=True)

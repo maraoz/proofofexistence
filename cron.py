@@ -31,3 +31,10 @@ class ConfirmationCron(webapp2.RequestHandler):
       body = subject + "\n\nmesage: %s" % (ret['message'])
       mail.send_mail(sender_address, ADMIN_EMAIL, subject, body)
 
+class PaymentCheckerCron(webapp2.RequestHandler):
+  def get(self):
+    paid = Document.get_paid()
+    for d in paid:
+      #d.received_payment()
+      self.response.write("%s %s<br />" % (d.digest, d.payment_address))
+

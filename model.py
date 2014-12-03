@@ -1,7 +1,7 @@
 
 from google.appengine.ext import db
 from pycoin.encoding import hash160_sec_to_bitcoin_address
-from blockchain import new_address, publish_data, archive_address
+from blockchain import new_address, publish_data, archive_address, address_balance
 import datetime
 
 class LatestBlockchainDocuments(db.Model):
@@ -33,6 +33,10 @@ class Document(db.Model):
   
   legacy = db.BooleanProperty()
   archived= db.DateTimeProperty()
+
+  def received_payment(self):
+    self.pending = False
+    self.put()
 
   def payment_received(self):
     return not self.pending
@@ -97,6 +101,22 @@ class Document(db.Model):
   @classmethod
   def get_actionable(cls):
     return cls.all().filter("pending == ", False).filter("tx == ", '').run()
+
+  @classmethod
+  def get_paid(cls):
+    limit = datetime.datetime.now() - datetime.timedelta(days=10)
+    pending = cls.all() \
+      .filter("pending == ", True) \
+      .filter("timestamp < ", limit) \
+      .filter("tx == ", '') \
+      .run(limit=10000)
+    ret = []
+    for d in pending:
+      balance = address_balance(d.payment_address)
+      if balance:
+        ret.append(d)
+    return ret
+
 
   @classmethod
   def update_schema(cls):
