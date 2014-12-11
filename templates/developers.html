@@ -15,7 +15,8 @@
 		Receives a digest and returns <code>registered</code>, <code>pending</code>
 		or <code>confirmed</code> if the document was registered, was paid for
 		and pending blockchain insertion, or confirmed by the blockchain,
-		respectively.</li>
+    respectively. If the status is <code>registered</code>, you'll also get
+    the payment address and price to confirm the document in the blockchain.</li>
 </ul>
 <p>Let's explain the API using an example:</p>
 First we compute the SHA256 checksum hexdigest for a file we want to
@@ -60,7 +61,8 @@ We want to get it from "registered" to "pending" after that.
 <pre><code>curl -k -d d=15db6dbff597875ea13246e1c166802b690663c4e0635bfca78049d5a8762832 http://www.proofofexistence.com/api/v1/status; echo
 {
   "success": true,
-  "status": "registered"
+  "status": "registered",
+  "pay_address": "1JP4ymzPo9rWmjzRazhRwJ4zYCJupqnTTJ"
 }</code>
 </pre>
 

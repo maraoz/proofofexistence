@@ -7,6 +7,7 @@ from google.appengine.api import mail
 
 from secrets import ADMIN_EMAIL
 from blockchain import auto_consolidate
+
 class ConsolidationCron(webapp2.RequestHandler):
   def get(self):
     archiveable = Document.get_archiveable()
@@ -30,4 +31,12 @@ class ConfirmationCron(webapp2.RequestHandler):
       subject = "Document certified: %s %s" % (ret['success'], d.digest)
       body = subject + "\n\nmesage: %s" % (ret['message'])
       mail.send_mail(sender_address, ADMIN_EMAIL, subject, body)
+
+class PaymentCheckerCron(webapp2.RequestHandler):
+  def get(self):
+    digest = self.request.get('d')
+    d = Document.get_doc(digest)
+    if d and d.pending and d.has_balance():
+      d.received_payment()
+      self.response.write("%s %s<br />" % (d.digest, d.payment_address))
 

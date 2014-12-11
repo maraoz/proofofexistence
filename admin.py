@@ -60,8 +60,7 @@ class BasePaymentCallback(JsonAPIHandler):
     if not callback_secret_valid(secret):
       return "error: secret invalid"
 
-    doc.pending = False
-    doc.put()
+    doc.received_payment()
 
     return "*ok*"
   

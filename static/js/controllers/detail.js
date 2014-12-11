@@ -65,6 +65,7 @@ $(document).ready(function() {
         clz = 'alert-danger';
         img_src = 'warn.png';
         var uri = 'bitcoin:'+data.payment_address+'?amount=0.005'
+        var url = 'https://insight.bitpay.com/address/'+data.payment_address;
         var qrcode = new QRCode('qr', {
           text: uri,
           width: 256,
@@ -73,7 +74,7 @@ $(document).ready(function() {
         });
         askPaymentReceived();
         padd.text(data.payment_address);
-        plink.attr('href', uri);
+        plink.attr('href', url);
         certify_message.show();
       }
       blockchain_message.html(msg);

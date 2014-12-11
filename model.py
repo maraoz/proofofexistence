@@ -1,8 +1,10 @@
 
 from google.appengine.ext import db
 from pycoin.encoding import hash160_sec_to_bitcoin_address
-from blockchain import new_address, publish_data, archive_address
+from blockchain import new_address, publish_data, archive_address, address_balance
 import datetime
+from time import sleep
+from config import MIN_SATOSHIS_PAYMENT
 
 class LatestBlockchainDocuments(db.Model):
   """Helper table for latest confirmed documents retrieval"""
@@ -34,6 +36,10 @@ class Document(db.Model):
   legacy = db.BooleanProperty()
   archived= db.DateTimeProperty()
 
+  def received_payment(self):
+    self.pending = False
+    self.put()
+
   def payment_received(self):
     return not self.pending
 
@@ -52,6 +58,10 @@ class Document(db.Model):
     self.txstamp = datetime.datetime.fromtimestamp(tx_timestamp)
     self.pending = False
     self.put()
+
+  def has_balance(self):
+    balance = address_balance(self.payment_address)
+    return True if balance >= MIN_SATOSHIS_PAYMENT else False
 
   @classmethod
   def get_doc(cls, digest):
@@ -97,6 +107,19 @@ class Document(db.Model):
   @classmethod
   def get_actionable(cls):
     return cls.all().filter("pending == ", False).filter("tx == ", '').run()
+
+  @classmethod
+  def get_paid(cls, offset=0):
+    limit = datetime.datetime.now() - datetime.timedelta(days=10)
+    #.filter("timestamp < ", limit) \
+    pending = cls.all() \
+      .filter("pending == ", True) \
+      .filter("tx == ", '') \
+      .run(offset=offset, limit=50)
+    for d in pending:
+      if d.has_balance():
+        yield d
+      sleep(0.2)
 
   @classmethod
   def update_schema(cls):
