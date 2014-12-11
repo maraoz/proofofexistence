@@ -48,4 +48,5 @@ class ExternalStatusHandler(JsonAPIHandler):
     if doc.is_actionable():
       return {"success": True, "status": "pending"}
 
-    return {"success": True, "status": "registered"}
+    pay_address = doc.payment_address
+    return {"success": True, "status": "registered", "pay_address": pay_address}
