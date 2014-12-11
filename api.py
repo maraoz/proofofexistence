@@ -49,4 +49,8 @@ class ExternalStatusHandler(JsonAPIHandler):
       return {"success": True, "status": "pending"}
 
     pay_address = doc.payment_address
-    return {"success": True, "status": "registered", "pay_address": pay_address}
+    return {"success": True, \
+        "status": "registered", \
+        "pay_address": pay_address, \
+        "price": MIN_SATOSHIS_PAYMENT \
+        }
