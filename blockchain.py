@@ -91,7 +91,6 @@ def auto_consolidate(days=10):
 
 def address_balance(addr):
   url = BASE_BLOCKCHAIN_URL + '/address/%s?format=json&limit=0' % addr
-  logging.info(url)
   result = urlfetch.fetch(url)
   if result.status_code == 200:
     return json.loads(result.content)['final_balance']
