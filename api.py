@@ -44,13 +44,13 @@ class ExternalStatusHandler(JsonAPIHandler):
     if not doc:
       return {"success": False, "reason": "nonexistent"}
     if doc.tx:
-      return {"success": True, "status": "confirmed", "transaction": doc.tx}
+      return {"success": True, "status": "confirmed", "transaction": doc.tx, "txstamp": doc.txstamp}
     if doc.is_actionable():
       return {"success": True, "status": "pending"}
-
-    pay_address = doc.payment_address
+  
     return {"success": True, \
         "status": "registered", \
-        "pay_address": pay_address, \
+        "pay_address": doc.payment_address, \
         "price": MIN_SATOSHIS_PAYMENT \
         }
+

@@ -37,9 +37,3 @@ indexes:
   - name: tx
   - name: timestamp
     direction: desc
-
-- kind: Document
-  properties:
-  - name: pending
-  - name: tx
-  - name: timestamp

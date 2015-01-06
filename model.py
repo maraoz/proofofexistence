@@ -53,12 +53,6 @@ class Document(db.Model):
     d = db.to_dict(self)
     return d
 
-  def confirmed(self, tx_hash, tx_timestamp):
-    self.tx = tx_hash
-    self.txstamp = datetime.datetime.fromtimestamp(tx_timestamp)
-    self.pending = False
-    self.put()
-
   def has_balance(self):
     balance = address_balance(self.payment_address)
     return True if balance >= MIN_SATOSHIS_PAYMENT else False
@@ -78,19 +72,6 @@ class Document(db.Model):
     d.legacy = False
     d.tx = ''
     d.payment_address = None
-
-    d.put()
-    return d
-
-  @classmethod
-  def import_legacy(cls, digest, tx, timestamp, txstamp):
-    d = cls.new(digest)
-    d.pending = False
-    d.legacy = True
-    d.tx = tx
-    d.timestamp = timestamp
-    d.txstamp = txstamp
-    d.payment_address = 'coinbase'
 
     d.put()
     return d
