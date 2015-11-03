@@ -1,0 +1,213 @@
+#!/usr/bin/env bash
+#              bash 4.3.11(1)   Linux 3.13.0 Ubuntu 14.04.3   Date : 2015-10-30
+#
+# _______________|  proofexist : register hash, else get its time parameters.
+#
+#           Usage:  $ ./proofexist [hash]
+#                   #  Register hash, else give its timestamp and blockstamp.
+#                   #  FREE: timestamp of when ProofofExistence received hash.
+#                   #  COMMERCIAL: costs at least 5 mBTC for blockstamp.
+#                   #  Empty blockstamp means transaction is pending.
+#                   #  To verify, see comments at the end of this script.
+#
+#                   Bitcoin transactions can take hours and does not provide 
+#                   a precise time of when the document's hash was created. 
+#                   Blockstamp indicates the time a transaction was executed. 
+#
+#            Test:  $ ./proofexist     # Using pre-registered default hash.
+#                   15db6dbff590000ea13246e1c166802b690663c4e0635bfca78049d5a8762832
+#                   "timestamp":"2015-09-28 18:16:50"
+#                   "blockstamp":"2015-09-28 19:32:54"
+#                   https://proofofexistence.com/detail/15db6[...]62832
+#
+#    Dependencies:  API at https://proofofexistence.com/developers
+#
+#  CHANGE LOG  LATEST version available:   https://git.io/victor
+#  2015-10-30  First version.
+#
+#  REFERENCE:  Interesting interview https://www.youtube.com/watch?v=6YHiuZeWyrE 
+#              http://blog.erratasec.com/2013/05/bitcoin-is-public-ledger.html
+#
+# REPOSITORY:  https://github.com/maraoz/proofofexistence
+# Developers:  Manuel Araoz @maraoz + Esteban Ordano @eordano 
+#              (same usernames at Github)
+
+
+#           _____ PREAMBLE_v3: settings, variables, and error handling.
+#
+LC_ALL=POSIX
+#      locale means "ASCII, US English, no special rules, 
+#      output per ISO and RFC standards." 
+#      Esp. use ASCII encoding for glob and sorting characters. 
+shopt -s   extglob
+#     ^set extended glob for pattern matching.
+shopt -s   failglob
+#         ^failed pattern matching signals error.
+set -e
+#   ^errors checked: immediate exit if a command has non-zero status. 
+set -o pipefail
+#   ^exit status on fail within pipe, not (default) last command.
+set -u
+#   ^unassigned variables shall be errors.
+#    Example of default VARIABLE ASSIGNMENT:  arg1=${1:-'foo'}
+
+hash=${1:-'15db6dbff590000ea13246e1c166802b690663c4e0635bfca78049d5a8762832'}
+#         ^test argument given on their demo page.
+
+
+program=${0##*/}   #  similar to using basename
+memf=$( mktemp /dev/shm/88_${program}_tmp.XXXXXXXXXX )
+mem2=$( mktemp /dev/shm/88_${program}_tmp.XXXXXXXXXX )
+errf=$( mktemp /dev/shm/88_${program}_tmp.XXXXXXXXXX )
+
+
+cleanup () {
+     #  Delete temporary files, then optionally exit given status.
+     local status=${1:-'0'}
+     rm -f $memf $mem2 $errf
+     [ $status = '-1' ] ||  exit $status      #  thus -1 prevents exit.
+} #--------------------------------------------------------------------
+warn () {
+     #  Message with basename to stderr.          Usage: warn "message"
+     echo -e "\n !!  ${program}: $1 "  >&2
+} #--------------------------------------------------------------------
+die () {
+     #  Exit with status of most recent command or custom status, after
+     #  cleanup and warn.      Usage: command || die "message" [status]
+     local status=${2:-"$?"}
+     cat $errf >&2
+     cleanup -1  &&   warn "$1"  &&  exit $status
+} #--------------------------------------------------------------------
+trap "die 'SIG disruption, but cleanup finished.' 114" 1 2 3 15
+#    Cleanup after INTERRUPT: 1=SIGHUP, 2=SIGINT, 3=SIGQUIT, 15=SIGTERM
+trap "die 'unhandled ERR via trap, but cleanup finished.' 116" ERR
+#    Cleanup after command failure unless it's part of a test clause.
+#
+# _______________     ::  BEGIN  Script ::::::::::::::::::::::::::::::::::::::::
+
+
+zeros='0000000000000000000000000000000000000000000000000000000000000000'
+hashpad="${hash}${zeros}"
+hash="${hashpad:0:64}"
+#    ^Whatever it takes, small or big, to LOOK LIKE SHA-256.
+#     API expects length of 64 like SHA-256. So e.g. SHA-1 needs padding.
+echo "$hash"
+
+
+#  Given hash argument, try to REGISTER it:
+curl --silent -d d="$hash"                           \
+     https://www.proofofexistence.com/api/v1/register > $memf
+
+
+#  If hash is already registered, get STATUS:
+#             ^{"success":false,"reason":"existing","digest":"HASH"}
+#
+if grep '"reason":"existing"' $memf > /dev/null ; then
+
+     #  Get ONLY the timestamp and blockstamp:
+     curl --silent -d d="$hash"                           \
+          https://www.proofofexistence.com/api/v1/status   > $mem2
+     echo >> $mem2
+     sed  -e 's/^.*timestamp/"timestamp/'   -e 's/,.*$//' \
+          -e 's/}$//'  $mem2
+     sed  -e 's/^.*blockstamp/"blockstamp/' -e 's/,.*$//' \
+          -e 's/}$//'  $mem2
+     #
+     #  e.g.  Success:  "blockstamp":"2015-09-28 19:32:54"
+     #        Pending:  "blockstamp":""
+
+else
+
+     echo " ::  $program REGISTERED: $hash"
+     #    If this shows up multiple times, hash is probably not SHA-256.
+
+fi
+
+
+echo "https://proofofexistence.com/detail/$hash"
+#  2015-10-31  "Please send 5 mBTC or more to: 
+#               14u7yFWKkPw3RiYHVNUgYpvVNHWcREf2ud"
+#               to embed the document's digest in the blockchain.
+
+
+#  #  Indented translation of sample STATUS:  [$memf is single line]
+#
+#  {
+#    "digest":"15db6dbff590000ea13246e1c166802b690663c4e0635bfca78049d5a8762832",
+#    "payment_address":"1Zmxnd5CmLqhVnCbEcvxNxCoeqa2qhun3",
+#    "pending":false,
+#    "timestamp":"2015-09-28 18:16:50",
+#    "tx":"f8db93646769eaf614cf5f26fb1bf1b78ee3f83ba6bebb5f7da9223f0022577d",
+#    "txstamp":"2015-09-28 18:26:31",
+#    "network":"livenet",
+#    "success":true,
+#    "blockstamp":"2015-09-28 19:32:54"
+#  }
+# 
+#  Above indicates the address received payment and that the transaction 
+#  proving the document's existence was sent to the blockchain.  
+#
+#  "timestamp" indicates was when it was received by ProofofExistence 
+#  servers. 
+#  
+#  "txstamp" indicates when payment transaction was received and
+#  certifying transaction with OP_RETURN was sent to the blockchain.
+#  
+#  "tx" indicates transaction containing proof of existence of the document.
+#  
+#  "blockstamp" indicates timestamp of the bitcoin block containing 
+#  the transaction, which could be empty because the transaction has 
+#  not yet been confirmed. Once the certifying transaction is confirmed, 
+#  that field will be populated. 
+
+
+#  #  Indented translation of successful REGISTRATION:  [$memf is single line]
+#  {
+#    "success":"true",
+#    "digest":"15db6dbff590000ea13246e1c166802b690663c4e0635bfca78049d5a8762832",
+#    "pay_address":"1Zmxnd5CmLqhVnCbEcvxNxCoeqa2qhun3",
+#    "price":500000
+#  }
+
+
+cleanup    #  Instead of: trap arg EXIT
+# _______________ EOS ::  END of Script ::::::::::::::::::::::::::::::::::::::::
+
+
+#            _____ Technical Foundations (edited)
+#  
+#  A SHA256 digest is embedded in the bitcoin blockchain by generating a special
+#  bitcoin transaction that encodes/contains the hash via an OP_RETURN script.
+#  This is a bitcoin scripting opcode that marks the transaction output as
+#  provably unspendable and allows a small amount of data to be inserted, which
+#  in our case is the hash, plus a marker to identify all of our transactions.
+#  
+#  Once the transaction is confirmed, the document is permanently certified and
+#  proven to exist at least as early as the time the transaction was confirmed.
+#  If the document had not existed at the time the transaction entered the
+#  blockchain, it would have been impossible to embed its digest in the
+#  transaction because the hash function is second pre-image resistant. 
+#  Embedding some hash and then adapting a future document to match the 
+#  hash is also impossible due to the pre-image resistance of hash
+#  functions. No trust is required.
+#  
+#  To VERIFY THE TIMESTAMP:
+#  
+#  ```
+#       Find the transaction in the bitcoin blockchain containing an OP_RETURN
+#       output with the document's hash prepended by our marker bytes which are
+#       0x444f4350524f4f46 (or 'DOCPROOF' in ascii).
+#  ```
+#  
+#  Online services like  http://coinsecrets.org   
+#                    or  https://blockchain.info/strange-transactions 
+#  can help locate OP_RETURN transactions. One can also sync the blockchain 
+#  from the p2p network and look at the transactions there.
+#  
+#  The existence of our transaction in the blockchain proves that the document
+#  existed at the time the transaction was included into a block.
+#  
+#  Follow-up: https://github.com/maraoz/proofofexistence/issues/6
+
+
+#  vim: set fileencoding=utf-8 ff=unix tw=78 ai syn=sh :
