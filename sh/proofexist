@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#              bash 4.3.11(1)   Linux 3.13.0 Ubuntu 14.04.3   Date : 2015-10-30
+#              bash 4.3.11(1)   Linux 3.13.0 Ubuntu 14.04.3   Date : 2015-11-04
 #
 # _______________|  proofexist : register hash, else get its time parameters.
 #
@@ -23,6 +23,7 @@
 #    Dependencies:  API at https://proofofexistence.com/developers
 #
 #  CHANGE LOG  LATEST version available:   https://git.io/victor
+#  2015-11-04  Die or warn if hash length is not exactly 64.
 #  2015-10-30  First version.
 #
 #  REFERENCE:  Interesting interview https://www.youtube.com/watch?v=6YHiuZeWyrE 
@@ -86,10 +87,17 @@ trap "die 'unhandled ERR via trap, but cleanup finished.' 116" ERR
 # _______________     ::  BEGIN  Script ::::::::::::::::::::::::::::::::::::::::
 
 
+hashlen="${#hash}"
+
+#  Failure OR Warning if hash is not exactly length 64:
+[ $hashlen -gt 64 ] && die  "hash length $hashlen exceeds 64." 113
+[ $hashlen -lt 64 ] && warn "hash length $hashlen must be 64: ZERO-PADDED."
+
+
 zeros='0000000000000000000000000000000000000000000000000000000000000000'
 hashpad="${hash}${zeros}"
 hash="${hashpad:0:64}"
-#    ^Whatever it takes, small or big, to LOOK LIKE SHA-256.
+#    ^Whatever it takes to LOOK LIKE SHA-256.
 #     API expects length of 64 like SHA-256. So e.g. SHA-1 needs padding.
 echo "$hash"
 
