@@ -22,7 +22,7 @@ import binascii
 from pycoin.tx.UnsignedTx import UnsignedTxOut
 from pycoin.serialize import b2h
 
-TX_FEES = 10000
+TX_FEES = 50000
 BLOCKCHAIN_DUST = 5430
 B2S = 100000000
 
